@@ -1,0 +1,116 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\Company;
+use App\Models\Route;
+use App\Models\Stop;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+
+class getRouteFareList extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'app:get-route-fare-list';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+        $routes = Cache::remember('users', 1000, function () {
+            return Http::get('https://data.hkbus.app/routeFareList.json')->collect();
+        });
+
+        Company::create([
+            'co' => 'kmb',
+            'name_tc' => '九巴',
+            'name_en' => 'KMB',
+        ]);
+
+        Company::create([
+            'co' => 'ctb',
+            'name_tc' => '城巴',
+            'name_en' => 'CTB',
+        ]);
+
+        Company::create([
+            'co' => 'gmb',
+            'name_tc' => '綠色專線小巴',
+            'name_en' => 'GMB',
+        ]);
+
+        Company::create([
+            'co' => 'nlb',
+            'name_tc' => '新大嶼山巴士',
+            'name_en' => 'NLB',
+        ]);
+
+        Company::create([
+            'co' => 'lightRail',
+            'name_tc' => '輕鐵',
+            'name_en' => 'Light Rail',
+        ]);
+
+        Company::create([
+            'co' => 'lrtfeeder',
+            'name_tc' => '港鐵巴士',
+            'name_en' => 'MTR bus',
+        ]);
+
+        Company::create([
+            'co' => 'mtr',
+            'name_tc' => '港鐵',
+            'name_en' => 'MTR',
+        ]);
+
+        foreach ($routes['stopList'] as $id => $stop)
+        {
+            Stop::create([
+                'stop_id' => $id,
+                'name_tc' => $stop['name']['zh'],
+                'name_en' => $stop['name']['en'],
+                'position' => DB::raw('POINT(' . $stop['location']['lat'] . ', ' . $stop['location']['lng'] . ')'),
+            ]);
+        }
+
+        foreach ($routes['routeList'] as $route)
+        {
+            $new_route = Route::create([
+                'name' => $route['route'],
+                'service_type' => $route['serviceType'],
+                'orig_tc' => $route['orig']['zh'],
+                'orig_en' => $route['orig']['en'],
+                'dest_tc' => $route['dest']['zh'],
+                'dest_en' => $route['dest']['en'],
+            ]);
+
+            foreach ($route['co'] as $co)
+            {
+                if (!isset($route['bound'][$co])) continue;
+
+                $company = Company::where('co', $co)->first();
+                $new_route->companies()->attach($company->id, ['bound' => $route['bound'][$co]]);
+
+                foreach ($route['stops'][$co] as $sequence => $stop)
+                {
+                    $target_stop = Stop::where('stop_id', $stop)->first();
+                    $new_route->stops()->attach($target_stop->id, ['sequence' => $sequence, 'fare' => $route['fares'][$sequence] ?? null]);
+                }
+            }
+        }
+    }
+}

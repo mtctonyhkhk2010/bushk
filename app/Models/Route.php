@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Route extends Model
 {
@@ -12,8 +12,13 @@ class Route extends Model
 
     protected $guarded = [];
 
-    public function stops(): HasMany
+    public function stops(): BelongsToMany
     {
-        return $this->hasMany(Stop::class);
+        return $this->belongsToMany(Stop::class)->using(RouteStop::class);
+    }
+
+    public function companies(): BelongsToMany
+    {
+        return $this->belongsToMany(Company::class);
     }
 }
