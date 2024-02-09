@@ -80,7 +80,7 @@ class getRouteFareList extends Command
         foreach ($routes['stopList'] as $id => $stop)
         {
             Stop::create([
-                'stop_id' => $id,
+                'stop_code' => $id,
                 'name_tc' => $stop['name']['zh'],
                 'name_en' => $stop['name']['en'],
                 'position' => DB::raw('POINT(' . $stop['location']['lat'] . ', ' . $stop['location']['lng'] . ')'),
@@ -107,8 +107,10 @@ class getRouteFareList extends Command
 
                 foreach ($route['stops'][$co] as $sequence => $stop)
                 {
-                    $target_stop = Stop::where('stop_id', $stop)->first();
+                    $target_stop = Stop::where('stop_code', $stop)->first();
                     $new_route->stops()->attach($target_stop->id, ['sequence' => $sequence, 'fare' => $route['fares'][$sequence] ?? null]);
+                    $target_stop->company_id = $company->id;
+                    $target_stop->save();
                 }
             }
         }

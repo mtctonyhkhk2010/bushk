@@ -14,11 +14,13 @@ class Route extends Model
 
     public function stops(): BelongsToMany
     {
-        return $this->belongsToMany(Stop::class)->using(RouteStop::class);
+        return $this->belongsToMany(Stop::class)
+            ->withPivot(['sequence', 'fare'])
+            ->using(RouteStop::class);
     }
 
     public function companies(): BelongsToMany
     {
-        return $this->belongsToMany(Company::class);
+        return $this->belongsToMany(Company::class)->withPivot(['bound']);
     }
 }

@@ -1,8 +1,8 @@
 <?php
 
 use App\Livewire\Search;
+use App\Livewire\ShowRoute;
 use App\Livewire\Welcome;
-use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +17,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', Welcome::class);
 Route::get('/search', Search::class);
+Route::get('/route/{route}/{name?}', ShowRoute::class);

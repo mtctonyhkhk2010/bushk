@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('stops', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->unsignedBigInteger('company_id')->nullable();
 
-            $table->string('stop_id')->index();
+            $table->string('stop_code')->index();
 
             $table->string('name_tc');
             $table->string('name_en');
