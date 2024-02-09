@@ -56,8 +56,10 @@
         service_type: @js($route->service_type),
         stops: @js($stops),
         companies: @js($route->companies->keyBy('id')),
+        etas: [],
 
         getETA(sequence) {
+            this.etas = [];
             for (let key in this.companies) {
                 if (!this.companies.hasOwnProperty(key)) continue;
 
@@ -80,9 +82,15 @@
                     method: 'get',
                     url: path,
                 })
-                    .then(function (response) {
-                        console.log(response.data);
-                    });
+                .then((response) => {
+                    console.log(response.data);
+                    response.data.data.forEach((item) => {
+                        this.etas.push({
+                            eta: item.eta,
+                            co: item.co,
+                        });
+                    })
+                });
             }
         },
     }));
