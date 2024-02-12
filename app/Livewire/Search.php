@@ -12,6 +12,7 @@ use Livewire\Component;
 class Search extends Component
 {
     public $selected_tab = 'all';
+    public $search = '';
 
     #[Title('Search')]
     public function render()
@@ -30,9 +31,40 @@ class Search extends Component
             });
         });
 
+        $query->when(!empty($this->search), function (Builder $query) {
+            $query->where('name', 'like', $this->search.'%');
+        });
+
+        $character_query = $query->clone();
+
+        $possible_characters = $character_query->selectRaw('SUBSTRING(name , ?, 1) AS possible', [strlen($this->search) + 1])->distinct()->get()->pluck('possible');
+        $possible_number = [];
+        $possible_alphabet = [];
+
+        foreach ($possible_characters as $character)
+        {
+            if ($character != 0 && empty($character)) continue;
+            if (str_contains('1234567890', $character)) $possible_number[] = $character;
+            if (str_contains('ABCDEFGHIJKLMNOPQRSTUVWXYZ', $character)) $possible_alphabet[] = $character;
+        }
+
         $routes = $query->with('companies')->limit(50)->get();
 
+        return view('livewire.search', compact('routes', 'possible_number', 'possible_alphabet'));
+    }
 
-        return view('livewire.search', compact('routes'));
+    public function addToSearch($character)
+    {
+        $this->search .= $character;
+    }
+
+    public function backspace()
+    {
+        $this->search = substr($this->search, 0, -1);
+    }
+
+    public function clearSearch()
+    {
+        $this->search = '';
     }
 }

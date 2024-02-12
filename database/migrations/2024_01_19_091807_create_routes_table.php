@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('routes', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->string('name');
+            $table->string('name')->index();
             $table->string('service_type')->nullable();
             $table->string('orig_tc');
             $table->string('orig_en');

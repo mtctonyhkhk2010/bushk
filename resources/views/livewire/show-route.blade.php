@@ -18,7 +18,7 @@
                     <div class="collapse-title text-xl font-medium"
                          x-on:click="getETA(stop.pivot.sequence)"
                     >
-                        <h5 x-text="(stop.pivot.sequence + 1) + '. ' + stop.name_tc"></h5>
+                        <h6 x-text="(stop.pivot.sequence + 1) + '. ' + stop.name_tc"></h6>
                         <span x-show="stop.pivot.fare > 0" x-text="'$' + stop.pivot.fare"></span>
                     </div>
                     <div class="p-4" x-show="expanded" x-collapse>
