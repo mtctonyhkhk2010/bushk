@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('route_stop', function (Blueprint $table) {
-            $table->unsignedBigInteger('route_id');
-            $table->unsignedBigInteger('stop_id');
+            $table->foreignIdFor(\App\Models\Route::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Stop::class)->constrained()->cascadeOnDelete();
 
             $table->unsignedInteger('sequence');
             $table->unsignedInteger('fare')->nullable();

@@ -21,8 +21,9 @@ return new class extends Migration
         });
 
         Schema::create('company_route', function (Blueprint $table) {
-            $table->unsignedBigInteger('company_id');
-            $table->unsignedBigInteger('route_id');
+            $table->foreignIdFor(\App\Models\Company::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Route::class)->constrained()->cascadeOnDelete();
+
 
             $table->string('bound')->nullable();
         });
