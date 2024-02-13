@@ -83,6 +83,7 @@
         current_latitude: null,
         current_longitude: null,
         current_position_marker: null,
+        current_position_accuracy_circle: null,
         first_load: true,
 
         init() {
@@ -126,14 +127,14 @@
 
         trackUserPosition() {
             navigator.geolocation.getCurrentPosition((position) => {
-                console.log('watchPosition');
+                console.log(position.coords);
                 this.current_latitude = position.coords.latitude;
                 this.current_longitude = position.coords.longitude;
 
-                const marker_style = `transform: scale(2) rotate(${position.coords.heading ?? 315}deg)`
+                const marker_style = `transform: scale(2) rotate(${(position.coords.heading ?? 360) - 45}deg)`
                 const location_icon = L.divIcon({
                     className: "location_icon",
-                    iconAnchor: [6, 24],
+                    iconAnchor: [6, 0],
                     labelAnchor: [-6, 0],
                     popupAnchor: [0, -36],
                     html: `<svg xmlns="http://www.w3.org/2000/svg" style="${marker_style}" viewBox="0 0 448 512"><path d="M429.6 92.1c4.9-11.9 2.1-25.6-7-34.7s-22.8-11.9-34.7-7l-352 144c-14.2 5.8-22.2 20.8-19.3 35.8s16.1 25.8 31.4 25.8H224V432c0 15.3 10.8 28.4 25.8 31.4s30-5.1 35.8-19.3l144-352z"/></svg>`
@@ -147,9 +148,16 @@
                 else
                 {
                     this.map.removeLayer(this.current_position_marker);
+                    this.map.removeLayer(this.current_position_accuracy_circle);
                 }
 
                 this.current_position_marker = L.marker([this.current_latitude, this.current_longitude], {icon: location_icon}).addTo(this.map);
+                this.current_position_accuracy_circle = L.circle([this.current_latitude, this.current_longitude], {
+                    color: 'blue',
+                    fillColor: '#24a3ff',
+                    fillOpacity: 0.3,
+                    radius: position.coords.accuracy ?? 500
+                }).addTo(this.map);
             });
         },
 
