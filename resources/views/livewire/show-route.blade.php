@@ -1,14 +1,14 @@
 <div>
-    <x-header class="mb-0" title="{{ $route->name }}" subtitle="{{ $route->dest_tc }}" separator>
+    <x-custom-header class="mb-0" title="{{ $route->name }}" subtitle="{{ $route->dest_tc }}" separator>
         <x-slot:actions>
             @if(isset($reverse_route))
                 <x-button icon="o-arrow-uturn-down" wire:navigate href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}" />
             @endif
         </x-slot:actions>
-    </x-header>
-    <div id="map" class="h-[35vh]" x-data="map" @go-to-position.window="goToPosition"></div>
-    <div class="h-[50vh] overflow-y-scroll" x-data="stop_list"  @go-to-stop.window="goToStop">
-{{--        <ul class="timeline timeline-vertical">--}}
+    </x-custom-header>
+    <div class="h-[70vh]">
+        <div id="map" class="h-2/5" x-data="map" @go-to-position.window="goToPosition"></div>
+        <div class="h-3/5 overflow-y-scroll" x-data="stop_list"  @go-to-stop.window="goToStop">
             <template x-for="stop in stops[Object.keys(companies)[0]]">
                 <div class="collapse bg-base-200"
                      :id="'stop_' + stop.pivot.sequence"
@@ -45,7 +45,7 @@
                     </div>
                 </div>
             </template>
-{{--        </ul>--}}
+        </div>
     </div>
 </div>
 
