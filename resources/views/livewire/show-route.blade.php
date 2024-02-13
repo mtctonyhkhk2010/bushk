@@ -117,7 +117,7 @@
             if (navigator.geolocation) {
                 this.trackUserPosition();
                 setInterval(() => {
-                    this.getUserLocation();
+                    this.trackUserPosition();
                 }, 10000);
             } else {
                 console.log("Geolocation is not supported by this browser.");
