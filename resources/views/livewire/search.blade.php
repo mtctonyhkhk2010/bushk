@@ -2,11 +2,6 @@
     <x-custom-header class="mb-0" title="{{ empty($search) ? '搜尋' : $search }}" separator/>
     <div class="h-[69vh]">
         <x-search-tabs wire:model.live="selected_tab" class="h-[calc(100%-2rem)] overflow-y-scroll">
-            <x-tab name="all" label="全部">
-                @foreach($routes as $route)
-                    <x-route-search-item :route="$route"/>
-                @endforeach
-            </x-tab>
             <x-tab name="bus" label="巴士">
                 @foreach($routes as $route)
                     <x-route-search-item :route="$route"/>

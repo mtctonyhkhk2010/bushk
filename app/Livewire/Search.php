@@ -11,7 +11,7 @@ use Livewire\Component;
 
 class Search extends Component
 {
-    public $selected_tab = 'all';
+    public $selected_tab = 'bus';
     public $search = '';
 
     #[Title('Search')]

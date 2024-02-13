@@ -10,7 +10,7 @@ class ShowRoute extends Component
     public Route $route;
     public $stops;
     public $stops_position = [];
-    public Route $reverse_route;
+    public ?Route $reverse_route;
 
     public function mount()
     {
