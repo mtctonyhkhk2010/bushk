@@ -1,18 +1,18 @@
 <div>
-    <x-header class="mb-0" title="{{ empty($search) ? 'Search' : $search }}" separator/>
-    <div class="h-[80vh]">
+    <x-header class="!mb-0" title="{{ empty($search) ? 'Search' : $search }}" separator/>
+    <div class="h-[69vh]">
         <x-search-tabs wire:model.live="selected_tab" class="h-[calc(100%-2rem)] overflow-y-scroll">
-            <x-tab name="all" label="All">
+            <x-tab name="all" label="全部">
                 @foreach($routes as $route)
                     <x-route-search-item :route="$route"/>
                 @endforeach
             </x-tab>
-            <x-tab name="bus" label="Bus">
+            <x-tab name="bus" label="巴士">
                 @foreach($routes as $route)
                     <x-route-search-item :route="$route"/>
                 @endforeach
             </x-tab>
-            <x-tab name="minibus" label="Mini Bus">
+            <x-tab name="minibus" label="小巴">
                 @foreach($routes as $route)
                     <x-route-search-item :route="$route"/>
                 @endforeach
