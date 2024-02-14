@@ -14,7 +14,7 @@ class CustomHeader extends Header
     {
         return <<<'HTML'
                 <div id="{{ $anchor }}" {{ $attributes->class(["", "mary-header-anchor" => $withAnchor]) }}>
-                    <div class="flex flex-wrap gap-5 justify-between items-center">
+                    <div class="flex flex-wrap gap-5 justify-between items-center h-[56px]">
                         <div>
                             <div @class(["$size font-extrabold", is_string($title) ? '' : $title?->attributes->get('class') ]) >
                                 @if($withAnchor)

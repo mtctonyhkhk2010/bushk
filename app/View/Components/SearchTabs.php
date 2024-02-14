@@ -29,7 +29,7 @@ class SearchTabs extends Tabs
                                      });
                                  }
                         }"
-                        class="relative h-3/5"}}
+                        class="relative h-[calc(100svh-112px-15rem)]"}}
                     >
                         <!-- TAB LABELS -->
                         <div class="border-b-2 border-b-base-200 flex overflow-x-auto">
