@@ -6,7 +6,7 @@
             @endif
         </x-slot:actions>
     </x-custom-header>
-    <div class="h-[70vh]">
+    <div class="h-[70svh]">
         <div id="map" class="h-2/5" x-data="map" @go-to-position.window="goToPosition"></div>
         <div class="h-3/5 overflow-y-scroll" x-data="stop_list"  @go-to-stop.window="goToStop">
             <template x-for="stop in stops[Object.keys(companies)[0]]">
@@ -29,6 +29,9 @@
                     </div>
                     <div class="p-4" x-show="expanded" x-collapse>
                         <div class="loader" x-show="loading"></div>
+                        <div x-show="!loading && etas.length === 0">
+                            未有預定班次
+                        </div>
                         <template x-for="eta in etas" >
                             <div x-show="!loading">
                                 <span x-text="formatTime(eta.eta)"></span>
@@ -39,7 +42,7 @@
                                     即將到達
                                 </span>)
                                 -
-                                <span x-text="eta.co"></span> <span x-text="eta.remark"></span>
+                                <span x-show="Object.keys(companies).length > 1" x-text="eta.co"></span> <span x-text="eta.remark"></span>
                             </div>
                         </template>
                     </div>
@@ -197,6 +200,7 @@
 
     Alpine.data('stop_list', () => ({
         route_name: @js($route->name),
+        gtfs_id: @js($route->gtfs_id),
         service_type: @js($route->service_type),
         stops: @js($stops),
         companies: @js($route->companies->keyBy('id')),
@@ -254,6 +258,10 @@
                 {
                     path = `https://rt.data.gov.hk//v2/transport/citybus/eta/CTB/${stop_code}/${this.route_name}`;
                 }
+                if (company.co === 'gmb')
+                {
+                    path = `https://data.etagmb.gov.hk/eta/route-stop/${this.gtfs_id}/${stop_code}`;
+                }
                 //console.log(path)
                 delete axios.defaults.headers.common["X-Requested-With"];
                 axios({
@@ -262,18 +270,41 @@
                 })
                 .then((response) => {
                     //console.log(response.data);
-                    response.data.data.forEach((item) => {
-                        if (item.eta === "" || item.eta === null) return;
+                    this.loading = false;
 
-                        this.etas.push({
-                            timestamp: Date.parse(item.eta),
-                            eta: item.eta,
-                            co: item.co,
-                            remark: item.rmk_tc,
+                    if (company.co === 'kmb' || company.co === 'ctb')
+                    {
+                        response.data.data.forEach((item) => {
+                            if (item.eta === "" || item.eta === null) return;
+
+                            this.etas.push({
+                                timestamp: Date.parse(item.eta),
+                                eta: item.eta,
+                                co: item.co,
+                                remark: item.rmk_tc,
+                            });
                         });
+                    }
 
-                        this.loading = false;
-                    })
+                    if (company.co === 'gmb')
+                    {
+                        response.data.data.forEach((item) => {
+                            if ((company.pivot.bound === "I" && item.route_seq === 1) ||
+                                (company.pivot.bound === "O" && item.route_seq === 2)) return;
+
+                            item.eta.forEach((eta) => {
+                                if (eta.timestamp === "" || eta.timestamp === null) return;
+
+                                console.log(eta, Date.parse(eta.timestamp));
+                                this.etas.push({
+                                    timestamp: Date.parse(eta.timestamp),
+                                    eta: eta.timestamp,
+                                    co: 'gmb',
+                                    remark: eta.remarks_tc,
+                                });
+                            })
+                        });
+                    }
                 });
 
 

@@ -92,6 +92,7 @@ class getRouteFareList extends Command
             $new_route = Route::create([
                 'name' => $route['route'],
                 'service_type' => $route['serviceType'],
+                'gtfs_id' => $route['gtfsId'],
                 'orig_tc' => $route['orig']['zh'],
                 'orig_en' => $route['orig']['en'],
                 'dest_tc' => $route['dest']['zh'],
