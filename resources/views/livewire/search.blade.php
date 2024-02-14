@@ -5,7 +5,7 @@
         </x-slot:middle>
     </x-custom-header>
     <div class="h-[calc(100svh-112px)]">
-        <x-search-tabs wire:model.live="selected_tab" class="h-[calc(100%-2rem)] overflow-y-scroll">
+        <x-search-tabs wire:model.live="selected_tab" class="h-[calc(100%-2.5rem)] overflow-y-scroll">
             <x-search-tab name="bus" label="巴士">
                 @foreach($routes as $route)
                     <x-route-search-item :route="$route"/>
