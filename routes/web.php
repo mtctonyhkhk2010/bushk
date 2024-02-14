@@ -15,6 +15,8 @@ use App\Livewire\Welcome;
 |
 */
 
-Route::get('/', Welcome::class);
+Route::get('/', function () {
+    return redirect('/search');
+});
 Route::get('/search', Search::class);
 Route::get('/route/{route}/{name?}', ShowRoute::class);

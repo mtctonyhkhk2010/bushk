@@ -61,9 +61,6 @@ class Welcome extends Component
 
     public function render()
     {
-        //temp
-        return $this->redirect('/search', navigate: true);
-
         return view('livewire.welcome', [
             'users' => $this->users(),
             'headers' => $this->headers()
