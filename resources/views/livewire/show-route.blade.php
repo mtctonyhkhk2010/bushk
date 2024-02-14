@@ -232,7 +232,7 @@
                 //get eta every 60 second
                 this.getETAInterval = setInterval(() => {
                     this.getETA(this.active);
-                }, 60000);
+                }, 30000);
             });
 
             document.addEventListener('livewire:navigating', () => {
@@ -247,6 +247,7 @@
         },
 
         getETA(sequence) {
+            if (sequence === this.active) return;
             this.active = sequence;
             this.loading = true;
             this.$dispatch('go-to-position', sequence);
@@ -285,7 +286,7 @@
                     if (company.co === 'kmb' || company.co === 'ctb')
                     {
                         response.data.data.forEach((item) => {
-                            if (item.eta === "" || item.eta === null) return;
+                            if (item.eta === "" || item.eta === null || item.dir !== company.pivot.bound) return;
 
                             this.etas.push({
                                 timestamp: Date.parse(item.eta),
