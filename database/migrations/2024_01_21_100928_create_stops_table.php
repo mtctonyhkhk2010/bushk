@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             //$table->unsignedBigInteger('company_id')->nullable();
-            $table->foreignIdFor(\App\Models\Company::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Company::class)->nullable();
 
             $table->string('stop_code')->index();
 
