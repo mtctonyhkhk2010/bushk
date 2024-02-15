@@ -90,6 +90,7 @@
         current_position_marker: null,
         current_position_accuracy_circle: null,
         first_load: true,
+        watch_position_id: null,
 
         init() {
             const stop_icon_colour = '#ce2b5c'
@@ -122,11 +123,11 @@
         getUserLocation() {
             if (navigator.geolocation) {
                 this.trackUserPosition();
-                const tracking = setInterval(() => {
-                    this.trackUserPosition();
-                }, 10000);
                 document.addEventListener('livewire:navigating', () => {
-                    if(tracking !== null) clearInterval(tracking);
+                    if(this.watch_position_id !== null)
+                    {
+                        navigator.geolocation.clearWatch(this.watch_position_id);
+                    }
                 })
             } else {
                 console.log("Geolocation is not supported by this browser.");
@@ -134,8 +135,8 @@
         },
 
         trackUserPosition() {
-            navigator.geolocation.getCurrentPosition((position) => {
-                console.log(position.coords);
+            this.watch_position_id = navigator.geolocation.watchPosition((position) => {
+                //console.log(position.coords);
                 this.current_latitude = position.coords.latitude;
                 this.current_longitude = position.coords.longitude;
 
