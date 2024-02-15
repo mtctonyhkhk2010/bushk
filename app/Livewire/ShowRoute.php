@@ -39,6 +39,6 @@ class ShowRoute extends Component
 
     public function render()
     {
-        return view('livewire.show-route');
+        return view('livewire.show-route')->title($this->route->name . ' ' . $this->route->dest_tc);
     }
 }
