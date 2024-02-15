@@ -121,14 +121,25 @@
         },
 
         getUserLocation() {
-            if (navigator.geolocation) {
-                this.trackUserPosition();
-                document.addEventListener('livewire:navigating', () => {
-                    if(this.watch_position_id !== null)
-                    {
-                        navigator.geolocation.clearWatch(this.watch_position_id);
+            navigator.permissions.query({name:'geolocation'})
+                .then((result) => {
+                        if (result.state === 'granted') {
+                            this.trackUserPosition();
+                            document.addEventListener('livewire:navigating', () => {
+                                if(this.watch_position_id !== null)
+                                {
+                                    navigator.geolocation.clearWatch(this.watch_position_id);
+                                }
+                            });
+                        } else {
+                            console.log('Browser location services disabled', navigator);
+                        }
+                    }, () => {
+                        console.log('Browser permissions services unavailable', navigator);
                     }
-                })
+                );
+            if (navigator.geolocation) {
+
             } else {
                 console.log("Geolocation is not supported by this browser.");
             }
@@ -167,6 +178,8 @@
                     fillOpacity: 0.3,
                     radius: position.coords.accuracy ?? 500
                 }).addTo(this.map);
+            }, () => {
+                console.log('System/OS services disabled', navigator);
             });
         },
 
