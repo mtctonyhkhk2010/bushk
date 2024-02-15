@@ -16,9 +16,9 @@ class ShowRoute extends Component
 
     public function mount()
     {
-        dd(Cache::remember('bbi_f1', 10000, function () {
-            return Http::get('https://www.kmb.hk/storage/BBI_routeF1.js')->collect();
-        })['A31']);
+//        dd(Cache::remember('bbi_f1', 10000, function () {
+//            return Http::get('https://www.kmb.hk/storage/BBI_routeF1.js')->collect();
+//        })['A31']);
         //dd($this->route->stops()->with('company')->get()->groupBy('company.id'));
         $this->reverse_route = Route::where('name', $this->route->name)
             ->where('service_type', $this->route->service_type)
