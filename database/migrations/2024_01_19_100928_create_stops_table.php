@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('stops', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->unsignedBigInteger('company_id')->nullable();
+            //$table->unsignedBigInteger('company_id')->nullable();
+            $table->foreignIdFor(\App\Models\Company::class)->constrained()->cascadeOnDelete();
 
             $table->string('stop_code')->index();
 
