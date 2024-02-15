@@ -4,14 +4,17 @@ namespace App\Livewire;
 
 use App\Models\Route;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use Livewire\Attributes\Session;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 
 class Search extends Component
 {
+    #[Url(as: 't'), Session]
     public $selected_tab = 'bus';
+
+    #[Url(as: 's'), Session]
     public $search = '';
 
     #[Title('Search')]
