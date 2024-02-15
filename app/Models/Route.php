@@ -23,4 +23,11 @@ class Route extends Model
     {
         return $this->belongsToMany(Company::class)->withPivot(['bound']);
     }
+
+    public function interchanges(): BelongsToMany
+    {
+        return $this->belongsToMany(Route::class)
+            ->withPivot(['validity_minutes', 'discount_mode', 'discount', 'detail', 'success_cnt', 'spec_remark_en', 'spec_remark_tc'])
+            ->using(Interchange::class);
+    }
 }

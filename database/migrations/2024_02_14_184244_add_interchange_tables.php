@@ -12,14 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('interchange', function (Blueprint $table) {
-            $table->foreignIdFor(\App\Models\Route::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\Route::class)->constrained()->cascadeOnDelete();
+            $table->foreignId('from_route_id')->references('id')->on('routes');
+            $table->foreignId('to_route_id')->references('id')->on('routes');
 
-            $table->foreignIdFor(\App\Models\Stop::class)->constrained()->cascadeOnDelete();
-
+            //if null, thats means can change anywhere
+            $table->foreignIdFor(\App\Models\Stop::class)->nullable();
 
             $table->integer('validity_minutes')->nullable();
-            $table->integer('discount_max')->nullable();
+            $table->string('discount_mode')->nullable();
+            $table->integer('discount')->nullable();
+            $table->string('detail')->nullable();
+            $table->integer('success_cnt')->nullable();
+
+            $table->string('spec_remark_en')->nullable();
+            $table->string('spec_remark_tc')->nullable();
         });
     }
 
