@@ -5,7 +5,8 @@
         </x-slot:middle>
         <x-slot:actions>
             @if(isset($reverse_route))
-                <x-button icon="o-arrow-uturn-down" wire:navigate href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}" />
+                <button class="btn btn-neutral" wire:navigate
+                        href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}"> <x-heroicon-o-arrow-uturn-down class="h-5 w-5"/>對頭線</button>
             @endif
         </x-slot:actions>
     </x-custom-header>
