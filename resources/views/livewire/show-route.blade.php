@@ -238,7 +238,7 @@
             this.$watch('active', () => {
                 if (this.active === null)
                 {
-                    clearInterval(this.getETAInterval);
+                    this.resetGetETA();
                     return;
                 }
 
@@ -250,9 +250,10 @@
 
             document.addEventListener("visibilitychange", () => {
                 this.is_visible = document.visibilityState === "visible";
-                if(!this.is_visible && this.getETAInterval !== null) clearInterval(this.getETAInterval);
-                if (this.is_visible)
+                if(!this.is_visible && this.getETAInterval !== null) this.resetGetETA();
+                if (this.is_visible && this.getETAInterval === null)
                 {
+                    this.getETA(this.active);
                     this.getETAInterval = setInterval(() => {
                         this.getETA(this.active);
                     }, 30000);
@@ -260,8 +261,13 @@
             });
 
             document.addEventListener('livewire:navigating', () => {
-                if(this.getETAInterval !== null) clearInterval(this.getETAInterval);
+                if(this.getETAInterval !== null) this.resetGetETA();
             })
+        },
+
+        resetGetETA() {
+            clearInterval(this.getETAInterval);
+            this.getETAInterval = null;
         },
 
         goToStop(event) {
@@ -271,7 +277,7 @@
         },
 
         getETA(sequence) {
-            if (sequence === this.active) return;
+            //if (sequence === this.active && !force) return;
             this.active = sequence;
             this.loading = true;
             this.$dispatch('go-to-position', sequence);
