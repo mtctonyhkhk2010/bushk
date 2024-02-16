@@ -30,6 +30,7 @@
                     >
                         <h6 x-text="(stop.pivot.sequence + 1) + '. ' + stop.name_tc"></h6>
                         <span x-show="stop.pivot.fare > 0" x-text="'$' + stop.pivot.fare"></span>
+                        <span x-show="stop.pivot.sequence === stops[Object.keys(companies)[0]].length - 1">終點站</span>
                     </div>
                     <div class="p-4" x-show="expanded" x-collapse>
                         <div class="loader" x-show="loading"></div>
@@ -337,7 +338,6 @@
                             item.eta.forEach((eta) => {
                                 if (eta.timestamp === "" || eta.timestamp === null) return;
 
-                                console.log(eta, Date.parse(eta.timestamp));
                                 this.etas.push({
                                     timestamp: Date.parse(eta.timestamp),
                                     eta: eta.timestamp,
