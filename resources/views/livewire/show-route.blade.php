@@ -226,6 +226,7 @@
         active: null,
         loading: false,
         getETAInterval: null,
+        is_visible: false,
 
         init() {
             this.$watch('etas', () => {
@@ -245,6 +246,17 @@
                 this.getETAInterval = setInterval(() => {
                     this.getETA(this.active);
                 }, 30000);
+            });
+
+            document.addEventListener("visibilitychange", () => {
+                this.is_visible = document.visibilityState === "visible";
+                if(!this.is_visible && this.getETAInterval !== null) clearInterval(this.getETAInterval);
+                if (this.is_visible)
+                {
+                    this.getETAInterval = setInterval(() => {
+                        this.getETA(this.active);
+                    }, 30000);
+                }
             });
 
             document.addEventListener('livewire:navigating', () => {
