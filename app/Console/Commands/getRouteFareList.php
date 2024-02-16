@@ -31,6 +31,7 @@ class getRouteFareList extends Command
      */
     public function handle()
     {
+        echo now()->toDateTimeString();
         $routes = Cache::remember('users', 1000, function () {
             return Http::get('https://data.hkbus.app/routeFareList.json')->collect();
         });
@@ -99,21 +100,26 @@ class getRouteFareList extends Command
                 'dest_en' => $route['dest']['en'],
             ]);
 
+            $companies = Company::whereIn('co', $route['co'])->get();
             foreach ($route['co'] as $co)
             {
                 if (!isset($route['bound'][$co])) continue;
 
-                $company = Company::where('co', $co)->first();
+                $company = $companies->firstWhere('co', $co);
                 $new_route->companies()->attach($company->id, ['bound' => $route['bound'][$co]]);
+
+                $target_stops = Stop::whereIn('stop_code', $route['stops'][$co])->get();
 
                 foreach ($route['stops'][$co] as $sequence => $stop)
                 {
-                    $target_stop = Stop::where('stop_code', $stop)->first();
+                    $target_stop = $target_stops->firstWhere('stop_code', $stop);
                     $new_route->stops()->attach($target_stop->id, ['sequence' => $sequence, 'fare' => $route['fares'][$sequence] ?? null]);
                     $target_stop->company_id = $company->id;
                     $target_stop->save();
                 }
             }
         }
+
+        echo now()->toDateTimeString();
     }
 }
