@@ -7,14 +7,17 @@
             @if(isset($reverse_route))
                 <button class="btn btn-neutral" wire:navigate
                         href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}"> <x-heroicon-o-arrow-uturn-down class="h-5 w-5"/>對頭線</button>
+                <button class="btn btn-neutral" wire:navigate
+                        href="/interchange/{{ $route->id }}">interchange</button>
             @endif
         </x-slot:actions>
     </x-custom-header>
     <div class="h-[calc(100svh-112px)]">
         <div id="map" class="h-2/5" x-data="map" @go-to-position.window="goToPosition"></div>
-        <div class="h-3/5 overflow-y-scroll" x-data="stop_list"  @go-to-stop.window="goToStop">
+        <div class="h-3/5 overflow-y-scroll" x-data="stop_list"
+             @go-to-stop.window="goToStop">
             <template x-for="stop in stops[Object.keys(companies)[0]]">
-                <div class="collapse bg-base-200"
+                <div class="bg-base-200"
                      :id="'stop_' + stop.pivot.sequence"
                      x-data="{
                             sequence: stop.pivot.sequence,
@@ -25,7 +28,7 @@
                                 this.active = value ? this.sequence : null
                             },
                         }">
-                    <div class="collapse-title text-xl font-medium"
+                    <div class="text-xl font-medium p-3"
                          x-on:click="getETA(stop.pivot.sequence)"
                     >
                         <h6 x-text="(stop.pivot.sequence + 1) + '. ' + stop.name_tc"></h6>
@@ -238,11 +241,7 @@
             });
 
             this.$watch('active', () => {
-                if (this.active === null)
-                {
-                    this.resetGetETA();
-                    return;
-                }
+                this.resetGetETA();
 
                 //get eta every 60 second
                 this.getETAInterval = setInterval(() => {

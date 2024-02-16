@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Interchange;
 use App\Models\Route;
 use App\Models\Stop;
 use Illuminate\Console\Command;
@@ -102,6 +103,16 @@ class getKmbBBIData extends Command
                 if (str_contains($record['discount_max'], '兩程合共')) $discount_mode = 'total';
                 if (str_contains($record['discount_max'], '回贈')) $discount_mode = 'reward';
 
+                if (str_contains($record['discount_max'], '免費'))
+                {
+                    $discount = 0;
+                }
+                else
+                {
+                    $discount = preg_replace("/[^.0-9]+/", "", $record['discount_max']);
+                }
+
+
                 $stop = null;
 
                 $xchange = trim(self::delete_all_between('(' , ')', $record['xchange']));
@@ -114,29 +125,29 @@ class getKmbBBIData extends Command
 
                 if (!isset($stop) && $xchange != '任何能接駁第二程路線的巴士站')
                 {
-                    echo 'cannot find stop ' . $xchange . ', route_name:' . $route_name.PHP_EOL;
+                    echo 'skipping, cannot find stop ' . $xchange . ', route_name:' . $route_name.PHP_EOL;
                     continue;
                 }
 
-//                $from_route->roles()->attach($to_route->id, [
-//                    'validity_minutes' => match ($record['validity']) {
-//                        '^' => 30,
-//                        '#' => 60,
-//                        '*' => 90,
-//                        '@' => 120,
-//                        '!' => 150,//適用於塘尾道或以後乘搭2A線之乘客
-//                        default => 150,
-//                    },
-//                    'discount_mode' => $discount_mode,
-//                    'detail' => $record['detail'],
-//                    'success_cnt' => $record['success_cnt'],
-//                    'spec_remark_en' => $record['spec_remark_eng'],
-//                    'spec_remark_tc' => $record['spec_remark_chi'],
-//                    'stop_id'
-//                ]);
-
-
-
+                Interchange::create([
+                    'from_route_id' => $from_route->id,
+                    'to_route_id' => $to_route->id,
+                    'validity_minutes' => match ($record['validity']) {
+                        '^' => 30,
+                        '#' => 60,
+                        '*' => 90,
+                        '@' => 120,
+                        '!' => 150,//適用於塘尾道或以後乘搭2A線之乘客
+                        default => 150,
+                    },
+                    'discount' => $discount,
+                    'discount_mode' => $discount_mode,
+                    'detail' => $record['detail'],
+                    'success_cnt' => $record['success_cnt'],
+                    'spec_remark_en' => $record['spec_remark_eng'],
+                    'spec_remark_tc' => $record['spec_remark_chi'],
+                    'stop_id' => $stop->id ?? null,
+                ]);
             }
 
 

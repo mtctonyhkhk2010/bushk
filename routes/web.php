@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Search;
+use App\Livewire\ShowInterchange;
 use App\Livewire\ShowRoute;
 use App\Livewire\Welcome;
 
@@ -20,3 +21,4 @@ Route::get('/', function () {
 });
 Route::get('/search', Search::class);
 Route::get('/route/{route}/{name?}', ShowRoute::class);
+Route::get('/interchange/{route}/{stop?}', ShowInterchange::class);
