@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('to_route_id')->references('id')->on('routes');
 
             //if null, thats means can change anywhere
-            $table->foreignIdFor(\App\Models\Stop::class)->nullable();
+            $table->foreignId('from_stop_id')->nullable()->references('id')->on('stops');
+            $table->foreignId('to_stop_id')->nullable()->references('id')->on('stops');
 
             $table->integer('validity_minutes')->nullable();
             $table->string('discount_mode')->nullable();

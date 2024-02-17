@@ -26,8 +26,8 @@ class Route extends Model
 
     public function interchanges(): BelongsToMany
     {
-        return $this->belongsToMany(Route::class, 'interchange', 'to_route_id', 'from_route_id')
-            ->withPivot(['stop_id', 'validity_minutes', 'discount_mode', 'discount', 'detail', 'success_cnt', 'spec_remark_en', 'spec_remark_tc'])
+        return $this->belongsToMany(Route::class, 'interchange', 'from_route_id', 'to_route_id')
+            ->withPivot(['from_stop_id', 'to_stop_id', 'validity_minutes', 'discount_mode', 'discount', 'detail', 'success_cnt', 'spec_remark_en', 'spec_remark_tc'])
             ->using(Interchange::class);
     }
 }

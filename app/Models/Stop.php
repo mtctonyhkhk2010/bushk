@@ -49,7 +49,7 @@ class Stop extends Model
         return parent::newQuery($excludeDeleted);
     }
 
-    protected function latitude(): Attribute
+    protected function longitude(): Attribute
     {
         $position = $this->attributes['position'];
         return Attribute::make(
@@ -62,7 +62,7 @@ class Stop extends Model
         )->shouldCache();
     }
 
-    protected function longitude(): Attribute
+    protected function latitude(): Attribute
     {
         $position = $this->attributes['position'];
         return Attribute::make(
@@ -83,5 +83,11 @@ class Stop extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function routes(): BelongsToMany
+    {
+        return $this->belongsToMany(Route::class)
+            ->using(RouteStop::class);
     }
 }

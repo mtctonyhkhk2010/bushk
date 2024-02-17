@@ -7,6 +7,7 @@ use App\Models\Route;
 use App\Models\Stop;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 class getKmbBBIData extends Command
@@ -30,6 +31,7 @@ class getKmbBBIData extends Command
      */
     public function handle()
     {
+        DB::table('interchange')->truncate();
         //if bus route is 1A
         //f1 = 1A bound is I, from 1A to other route
         //f2 = 1A bound is I, from other route to 1A
@@ -42,115 +44,146 @@ class getKmbBBIData extends Command
         $bbi_f1 = Cache::remember('bbi_f1', 10000, function () {
             return Http::get('https://www.kmb.hk/storage/BBI_routeF1.js')->collect();
         });
-        $bbi_f2 = Cache::remember('bbi_f2', 10000, function () {
-            return Http::get('https://www.kmb.hk/storage/BBI_routeF2.js')->collect();
-        });
+//        $bbi_f2 = Cache::remember('bbi_f2', 10000, function () {
+//            return Http::get('https://www.kmb.hk/storage/BBI_routeF2.js')->collect();
+//        });
         $bbi_b1 = Cache::remember('bbi_b1', 10000, function () {
             return Http::get('https://www.kmb.hk/storage/BBI_routeB1.js')->collect();
         });
-        $bbi_b2 = Cache::remember('bbi_b2', 10000, function () {
-            return Http::get('https://www.kmb.hk/storage/BBI_routeB2.js')->collect();
-        });
+//        $bbi_b2 = Cache::remember('bbi_b2', 10000, function () {
+//            return Http::get('https://www.kmb.hk/storage/BBI_routeB2.js')->collect();
+//        });
 
-        foreach ($bbi_f1 as $route_name => $data)
-        {
-            //no bbi record
-            if (is_string($data['Records'])) continue;
-
-            $from_route = Route::where('name', $route_name)->where('dest_tc', 'like', $data['bus_arr'][0]['dest'].'%')->first();
-            if (!isset($from_route))
+        foreach (['bbi_f1', 'bbi_b1'] as $filename) {
+            foreach ($$filename as $route_name => $data)
             {
-                //may be 循環線, try to find route by origin
-                $from_route = Route::where('name', $route_name)->where('orig_tc', 'like', $data['bus_arr'][0]['dest'].'%')->first();
+                //no bbi record
+                if (is_string($data['Records'])) continue;
 
+                $from_route = Route::where('name', $route_name)->where('dest_tc', 'like', $data['bus_arr'][0]['dest'].'%')->first();
                 if (!isset($from_route))
                 {
-                    echo 'cannot find from route ' . $route_name . ', dest:' . $data['bus_arr'][0]['dest'].PHP_EOL;
-                    continue;
-                }
-            }
-
-            foreach ($data['Records'] as $record)
-            {
-                $to_route_name = preg_replace("/[^a-zA-Z0-9]+/", "", $record['sec_routeno']);
-                $to_dest = trim(self::delete_all_between('(' , ')', $record['sec_dest']));
-                $to_route = Route::where('name', $to_route_name)->where('dest_tc', 'like', $to_dest.'%')->first();
-                if (!isset($to_route))
-                {
                     //may be 循環線, try to find route by origin
-                    $to_route = Route::where('name', $to_route_name)->where('orig_tc', 'like', $to_dest.'%')->first();
+                    $from_route = Route::where('name', $route_name)->where('orig_tc', 'like', $data['bus_arr'][0]['dest'].'%')->first();
+
+                    if (!isset($from_route))
+                    {
+                        echo 'cannot find from route ' . $route_name . ', dest:' . $data['bus_arr'][0]['dest'].PHP_EOL;
+                        continue;
+                    }
                 }
-                if (!isset($to_route))
+
+                foreach ($data['Records'] as $record)
                 {
-                    //it appears many exchange to CTB is not up-to-date, but they are all O bound
-                    $to_route = Route::where('name', $to_route_name)->where('service_type', 1)
-                        ->join('company_route', 'routes.id', '=', 'company_route.route_id')
-                        ->where('bound', 'O')
-                        ->select('routes.*')
-                        ->first();
+                    $to_route_name = preg_replace("/[^a-zA-Z0-9]+/", "", $record['sec_routeno']);
+                    $to_dest = trim(self::delete_all_between('(' , ')', $record['sec_dest']));
+                    $to_route = Route::where('name', $to_route_name)->where('dest_tc', 'like', $to_dest.'%')->first();
+                    if (!isset($to_route))
+                    {
+                        //may be 循環線, try to find route by origin
+                        $to_route = Route::where('name', $to_route_name)->where('orig_tc', 'like', $to_dest.'%')->first();
+                    }
+                    if (!isset($to_route))
+                    {
+                        //it appears many exchange to CTB is not up-to-date, but they are all O bound
+                        $to_route = Route::where('name', $to_route_name)->where('service_type', 1)
+                            ->join('company_route', 'routes.id', '=', 'company_route.route_id')
+                            ->where('bound', 'O')
+                            ->select('routes.*')
+                            ->first();
+                    }
+
+                    if (!isset($to_route))
+                    {
+                        echo 'cannot find to route ' . $to_route_name . ', dest:' . $to_dest.PHP_EOL;
+                        continue;
+                    }
+
+                    $discount_mode = 'minus';
+                    if (str_contains($record['discount_max'], '減')) $discount_mode = 'minus';
+                    if (str_contains($record['discount_max'], '免費')) $discount_mode = 'free';
+                    if (str_contains($record['discount_max'], '付')) $discount_mode = 'pay';
+                    if (str_contains($record['discount_max'], '兩程合共')) $discount_mode = 'total';
+                    if (str_contains($record['discount_max'], '回贈')) $discount_mode = 'reward';
+
+                    if (str_contains($record['discount_max'], '免費'))
+                    {
+                        $discount = 0;
+                    }
+                    else
+                    {
+                        $discount = preg_replace("/[^.0-9]+/", "", $record['discount_max']);
+                    }
+
+
+                    $stop = null;
+
+                    $xchange = $record['xchange'];
+                    //handle special case
+                    if ($xchange == '葵芳鐵路站') $xchange = '葵芳站';
+                    if ($xchange == '青衣站總站') $xchange = '青衣站';
+                    if ($xchange == '砵甸乍街') $xchange = '砵典乍街';
+                    if ($xchange != '任何能接駁第二程路線的巴士站')
+                    {
+                        //find by original name first
+                        $stop = Stop::where('name_tc', $xchange)->first();
+                        if (!isset($stop))
+                        {
+                            //then find by original name without the (platform)
+                            $xchange = trim(self::delete_all_between('(' , ')', $record['xchange']));
+                            $stop = Stop::where('name_tc', 'like', $xchange.'%')->first();
+                        }
+
+                        if (!isset($stop))
+                        {
+                            dd($from_route,$to_route);
+                        }
+
+                        $from_stop = Stop::join('route_stop', 'route_stop.stop_id', '=', 'stops.id')
+                            ->join('routes', 'route_stop.route_id', '=', 'routes.id')
+                            ->select('stops.*')
+                            ->selectRaw('ST_Distance_Sphere(position,point(?, ?)) AS distance', [$stop->longitude, $stop->latitude])
+                            ->where('routes.id', $from_route->id)
+                            ->orderBy('distance')
+                            //->toSql();
+                            ->first();
+                        //dd($from_stop);
+                    }
+
+                    if (!isset($stop) && $xchange != '任何能接駁第二程路線的巴士站')
+                    {
+                        echo 'skipping, cannot find stop ' . $xchange . ', route:' . $from_route->name.', to:' . $from_route->dest_tc.PHP_EOL;
+                        continue;
+                    }
+
+                    //skip if interchange distance is > 300m
+                    if (isset($stop) && isset($from_stop) && $stop->id !== $from_stop->id && $from_stop->distance > 300) continue;
+                    //dd($from_route,$to_route,$stop,$from_stop);
+
+                    Interchange::create([
+                        'from_route_id' => $from_route->id,
+                        'to_route_id' => $to_route->id,
+                        'validity_minutes' => match ($record['validity']) {
+                            '^' => 30,
+                            '#' => 60,
+                            '*' => 90,
+                            '@' => 120,
+                            '!' => 150,//適用於塘尾道或以後乘搭2A線之乘客
+                            default => 150,
+                        },
+                        'discount' => $discount,
+                        'discount_mode' => $discount_mode,
+                        'detail' => $record['detail'],
+                        'success_cnt' => $record['success_cnt'],
+                        'spec_remark_en' => $record['spec_remark_eng'],
+                        'spec_remark_tc' => $record['spec_remark_chi'],
+                        'from_stop_id' => isset($stop) ? ($from_stop->id ?? null) : null,
+                        'to_stop_id' => $stop->id ?? null,
+                    ]);
                 }
 
-                if (!isset($to_route))
-                {
-                    echo 'cannot find to route ' . $to_route_name . ', dest:' . $to_dest.PHP_EOL;
-                    continue;
-                }
 
-                $discount_mode = 'minus';
-                if (str_contains($record['discount_max'], '減')) $discount_mode = 'minus';
-                if (str_contains($record['discount_max'], '免費')) $discount_mode = 'free';
-                if (str_contains($record['discount_max'], '付')) $discount_mode = 'pay';
-                if (str_contains($record['discount_max'], '兩程合共')) $discount_mode = 'total';
-                if (str_contains($record['discount_max'], '回贈')) $discount_mode = 'reward';
-
-                if (str_contains($record['discount_max'], '免費'))
-                {
-                    $discount = 0;
-                }
-                else
-                {
-                    $discount = preg_replace("/[^.0-9]+/", "", $record['discount_max']);
-                }
-
-
-                $stop = null;
-
-                $xchange = trim(self::delete_all_between('(' , ')', $record['xchange']));
-                //handle special case
-                if ($xchange == '葵芳鐵路站') $xchange = '葵芳站';
-                if ($xchange != '任何能接駁第二程路線的巴士站')
-                {
-                    $stop = Stop::where('name_tc', 'like', $xchange.'%')->first();
-                }
-
-                if (!isset($stop) && $xchange != '任何能接駁第二程路線的巴士站')
-                {
-                    echo 'skipping, cannot find stop ' . $xchange . ', route_name:' . $route_name.PHP_EOL;
-                    continue;
-                }
-
-                Interchange::create([
-                    'from_route_id' => $from_route->id,
-                    'to_route_id' => $to_route->id,
-                    'validity_minutes' => match ($record['validity']) {
-                        '^' => 30,
-                        '#' => 60,
-                        '*' => 90,
-                        '@' => 120,
-                        '!' => 150,//適用於塘尾道或以後乘搭2A線之乘客
-                        default => 150,
-                    },
-                    'discount' => $discount,
-                    'discount_mode' => $discount_mode,
-                    'detail' => $record['detail'],
-                    'success_cnt' => $record['success_cnt'],
-                    'spec_remark_en' => $record['spec_remark_eng'],
-                    'spec_remark_tc' => $record['spec_remark_chi'],
-                    'stop_id' => $stop->id ?? null,
-                ]);
             }
-
-
         }
 
 

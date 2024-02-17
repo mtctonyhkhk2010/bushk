@@ -2,8 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Models\Interchange;
 use App\Models\Route;
+use App\Models\Stop;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Livewire\Component;
 
@@ -26,15 +29,23 @@ class ShowRoute extends Component
             ->where('dest_tc', $this->route->orig_tc)
             ->first();
 
+        $interchange_stop_ids = DB::table('interchange')
+            ->where('from_route_id', $this->route->id)
+            ->whereNotNull('from_stop_id')
+            ->distinct()
+            ->select('from_stop_id')
+            ->pluck('from_stop_id');
+
         $this->stops = $this->route->stops()->with('company')->get()->groupBy('company.id');
-        $this->stops->first()->each(function ($item) {
+        $this->stops->first()->each(function ($item) use ($interchange_stop_ids) {
             $this->stops_position[] = [
                 'latitude' => $item->latitude,
                 'longitude' => $item->longitude,
             ];
+            $item->interchangeable = $interchange_stop_ids->contains($item->id);
         });
         $this->stops = $this->stops->toArray();
-        //dd($this->route);
+        //dd($this->stops);
     }
 
     public function render()

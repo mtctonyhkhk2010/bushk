@@ -36,6 +36,14 @@ class getRouteFareList extends Command
             return Http::get('https://data.hkbus.app/routeFareList.json')->collect();
         });
 
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::table('route_stop')->truncate();
+        DB::table('company_route')->truncate();
+        DB::table('companies')->truncate();
+        DB::table('routes')->truncate();
+        DB::table('stops')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         Company::create([
             'co' => 'kmb',
             'name_tc' => '九巴',
@@ -84,7 +92,7 @@ class getRouteFareList extends Command
                 'stop_code' => $id,
                 'name_tc' => $stop['name']['zh'],
                 'name_en' => $stop['name']['en'],
-                'position' => DB::raw('POINT(' . $stop['location']['lat'] . ', ' . $stop['location']['lng'] . ')'),
+                'position' => DB::raw('POINT(' . $stop['location']['lng'] . ', ' . $stop['location']['lat'] . ')'),
             ]);
         }
 

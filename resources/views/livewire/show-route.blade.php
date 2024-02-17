@@ -7,8 +7,6 @@
             @if(isset($reverse_route))
                 <button class="btn btn-neutral" wire:navigate
                         href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}"> <x-heroicon-o-arrow-uturn-down class="h-5 w-5"/>對頭線</button>
-                <button class="btn btn-neutral" wire:navigate
-                        href="/interchange/{{ $route->id }}">interchange</button>
             @endif
         </x-slot:actions>
     </x-custom-header>
@@ -35,23 +33,30 @@
                         <span x-show="stop.pivot.fare > 0" x-text="'$' + stop.pivot.fare"></span>
                         <span x-show="stop.pivot.sequence === stops[Object.keys(companies)[0]].length - 1">終點站</span>
                     </div>
-                    <div class="p-4" x-show="expanded" x-collapse>
-                        <div class="loader" x-show="loading"></div>
-                        <div x-show="!loading && etas.length === 0">
-                            未有預定班次
-                        </div>
-                        <template x-for="eta in etas" >
-                            <div x-show="!loading">
-                                <span x-text="formatTime(eta.eta)"></span>
-                                (<span x-show="remainingTimeInMinutes(eta.eta) > 0">
+                    <div class="p-3 bg-black flex justify-between items-center" x-show="expanded" x-collapse>
+                        <div>
+                            <div class="loader" x-show="loading"></div>
+                            <div x-show="!loading && etas.length === 0">
+                                未有預定班次
+                            </div>
+                            <template x-for="eta in etas" >
+                                <div x-show="!loading">
+                                    <span x-text="formatTime(eta.eta)"></span>
+                                    (<span x-show="remainingTimeInMinutes(eta.eta) > 0">
                                     <span x-text="remainingTimeInMinutes(eta.eta)"></span>分鐘
                                 </span>
-                                <span x-show="remainingTimeInMinutes(eta.eta) == 0">
+                                    <span x-show="remainingTimeInMinutes(eta.eta) == 0">
                                     即將到達
                                 </span>)
-                                <span x-show="Object.keys(companies).length > 1" x-text="'- ' + eta.co"></span> <span x-show="eta.remark.length > 1" x-text="'- ' + eta.remark"></span>
-                            </div>
-                        </template>
+                                    <span x-show="Object.keys(companies).length > 1" x-text="'- ' + eta.co"></span> <span x-show="eta.remark.length > 1" x-text="'- ' + eta.remark"></span>
+                                </div>
+                            </template>
+                        </div>
+                        <div>
+                            <x-heroicon-o-arrows-right-left class="h-5 w-5 mx-2" x-show="stop.interchangeable"
+                                                            wire:navigate
+                                                            x-bind:href="'/interchange/' + route_id + '?stop=' + stop.id"/>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -222,6 +227,7 @@
     }));
 
     Alpine.data('stop_list', () => ({
+        route_id: @js($route->id),
         route_name: @js($route->name),
         gtfs_id: @js($route->gtfs_id),
         service_type: @js($route->service_type),
