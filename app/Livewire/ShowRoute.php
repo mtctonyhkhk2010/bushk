@@ -45,7 +45,7 @@ class ShowRoute extends Component
             $item->interchangeable = $interchange_stop_ids->contains($item->id);
         });
         $this->stops = $this->stops->toArray();
-        //dd($this->stops);
+        //dd($this->stops,$this->route->companies->first()->id);
     }
 
     public function render()

@@ -14,52 +14,9 @@
         <div id="map" class="h-2/5" x-data="map" @go-to-position.window="goToPosition"></div>
         <div class="h-3/5 overflow-y-scroll" x-data="stop_list"
              @go-to-stop.window="goToStop">
-            <template x-for="stop in stops[Object.keys(companies)[0]]">
-                <div class="bg-base-200"
-                     :id="'stop_' + stop.pivot.sequence"
-                     x-data="{
-                            sequence: stop.pivot.sequence,
-                            get expanded() {
-                                return this.active === this.sequence
-                            },
-                            set expanded(value) {
-                                this.active = value ? this.sequence : null
-                            },
-                        }">
-                    <div class="text-xl font-medium p-3"
-                         x-on:click="getETA(stop.pivot.sequence)"
-                    >
-                        <h6 x-text="(stop.pivot.sequence + 1) + '. ' + stop.name_tc"></h6>
-                        <span x-show="stop.pivot.fare > 0" x-text="'$' + stop.pivot.fare"></span>
-                        <span x-show="stop.pivot.sequence === stops[Object.keys(companies)[0]].length - 1">終點站</span>
-                    </div>
-                    <div class="p-3 bg-black flex justify-between items-center" x-show="expanded" x-collapse>
-                        <div>
-                            <div class="loader" x-show="loading"></div>
-                            <div x-show="!loading && etas.length === 0">
-                                未有預定班次
-                            </div>
-                            <template x-for="eta in etas" >
-                                <div x-show="!loading">
-                                    <span x-text="formatTime(eta.eta)"></span>
-                                    (<span x-show="remainingTimeInMinutes(eta.eta) > 0">
-                                    <span x-text="remainingTimeInMinutes(eta.eta)"></span>分鐘
-                                </span>
-                                    <span x-show="remainingTimeInMinutes(eta.eta) == 0">
-                                    即將到達
-                                </span>)
-                                    <span x-show="Object.keys(companies).length > 1" x-text="'- ' + eta.co"></span> <span x-show="eta.remark.length > 1" x-text="'- ' + eta.remark"></span>
-                                </div>
-                            </template>
-                        </div>
-                        <div>
-                            <x-heroicon-o-arrows-right-left class="h-5 w-5 mx-2" x-show="stop.interchangeable"
-                                                            wire:navigate
-                                                            x-bind:href="'/interchange/' + route_id + '?stop=' + stop.id"/>
-                        </div>
-                    </div>
-                </div>
-            </template>
+            @foreach($stops[$this->route->companies->first()->id] as $stop)
+                <livewire:show-route-stop :stop="$stop" :last_stop="$loop->iteration == $loop->count" :route_id="$route->id"/>
+            @endforeach
         </div>
     </div>
 </div>
@@ -227,7 +184,6 @@
     }));
 
     Alpine.data('stop_list', () => ({
-        route_id: @js($route->id),
         route_name: @js($route->name),
         gtfs_id: @js($route->gtfs_id),
         service_type: @js($route->service_type),
