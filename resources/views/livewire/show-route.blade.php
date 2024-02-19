@@ -11,6 +11,9 @@
             @endif
         </x-slot:start>
         <x-slot:end>
+            <x-heroicon-o-arrows-right-left class="h-5 w-5 mr-3"
+                                            wire:navigate
+                                            href="/interchange/{{ $route->id }}"/>
             <livewire:toggle-favorite-route :route_id="$route->id"/>
         </x-slot:end>
     </x-layouts.navbar>
