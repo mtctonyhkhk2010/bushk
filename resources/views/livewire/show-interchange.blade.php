@@ -1,9 +1,17 @@
 <div>
-    <x-custom-header class="mb-0">
-        <x-slot:middle>
+    <x-layouts.navbar>
+        <x-slot:start>
+            <div class="flex divide-x" wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}">
+                <div class="flex flex-col justify-items-center">
+                    <x-heroicon-o-arrow-left class="h-5 w-full"/>
+                    <div>返回</div>
+                </div>
+            </div>
+        </x-slot:start>
+        <x-slot:title>
             <span wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}">{{ $route->name }} {{ $route->dest_tc }}</span> 轉乘優惠
-        </x-slot:middle>
-    </x-custom-header>
+        </x-slot:title>
+    </x-layouts.navbar>
     <div class="h-[calc(100svh-112px)] overflow-y-scroll">
         @if($interchanges->isEmpty())
             此路線未有轉乘優惠

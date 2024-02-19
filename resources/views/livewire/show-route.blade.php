@@ -1,19 +1,22 @@
 <div>
-    <x-custom-header class="mb-0">
-        <x-slot:middle>
-            {{ $route->name }} {{ $route->dest_tc }}
-        </x-slot:middle>
-        <x-slot:actions>
+    <x-layouts.navbar :title="$route->name . ' ' .$route->dest_tc">
+        <x-slot:start>
             @if(isset($reverse_route))
-                <button class="btn btn-neutral" wire:navigate
-                        href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}"> <x-heroicon-o-arrow-uturn-down class="h-5 w-5"/>對頭線</button>
+            <div class="flex divide-x" wire:navigate href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}">
+                <div class="flex flex-col justify-items-center">
+                    <x-heroicon-o-arrow-uturn-down class="h-5 w-full"/>
+                    <div>對頭線</div>
+                </div>
+            </div>
             @endif
-        </x-slot:actions>
-    </x-custom-header>
+        </x-slot:start>
+        <x-slot:end>
+            <livewire:toggle-favorite-route :route_id="$route->id"/>
+        </x-slot:end>
+    </x-layouts.navbar>
     <div class="h-[calc(100svh-112px)]">
-        <div id="map" class="h-2/5" x-data="map" @go-to-position.window="goToPosition"></div>
-        <div class="h-3/5 overflow-y-scroll" x-data="stop_list"
-             @go-to-stop.window="goToStop">
+        <div id="map" class="h-2/5" x-data="map"></div>
+        <div class="h-3/5 overflow-y-scroll" x-data="stop_list">
             @foreach($stops[$this->route->companies->first()->id] as $stop)
                 <livewire:show-route-stop :stop="$stop" :last_stop="$loop->iteration == $loop->count" :route_id="$route->id"/>
             @endforeach
@@ -83,70 +86,49 @@
             });
             L.polyline(polylinePoints).addTo(this.map);
 
-            this.getUserLocation()
-        },
+            //this.getUserLocation()
+            this.trackUserPosition();
+            document.addEventListener("position-updated", (e) => {
+                this.trackUserPosition();
+            });
 
-        getUserLocation() {
-            navigator.permissions.query({name:'geolocation'})
-                .then((result) => {
-                        if (result.state === 'granted') {
-                            this.trackUserPosition();
-                            document.addEventListener('livewire:navigating', () => {
-                                if(this.watch_position_id !== null)
-                                {
-                                    navigator.geolocation.clearWatch(this.watch_position_id);
-                                }
-                            });
-                        } else {
-                            console.log('Browser location services disabled', navigator);
-                        }
-                    }, () => {
-                        console.log('Browser permissions services unavailable', navigator);
-                    }
-                );
-            if (navigator.geolocation) {
-
-            } else {
-                console.log("Geolocation is not supported by this browser.");
-            }
+            document.addEventListener("go-to-position", (e) => {
+                this.goToPosition(e);
+            });
         },
 
         trackUserPosition() {
-            this.watch_position_id = navigator.geolocation.watchPosition((position) => {
-                //console.log(position.coords);
-                this.current_latitude = position.coords.latitude;
-                this.current_longitude = position.coords.longitude;
+            if(window.coords === undefined) return;
+            this.current_latitude = window.coords.latitude;
+            this.current_longitude = window.coords.longitude;
 
-                const marker_style = `transform: scale(2) rotate(${(position.coords.heading ?? 360) - 45}deg)`
-                const location_icon = L.divIcon({
-                    className: "location_icon",
-                    iconAnchor: [6, 0],
-                    labelAnchor: [-6, 0],
-                    popupAnchor: [0, -36],
-                    html: `<svg xmlns="http://www.w3.org/2000/svg" style="${marker_style}" viewBox="0 0 448 512"><path d="M429.6 92.1c4.9-11.9 2.1-25.6-7-34.7s-22.8-11.9-34.7-7l-352 144c-14.2 5.8-22.2 20.8-19.3 35.8s16.1 25.8 31.4 25.8H224V432c0 15.3 10.8 28.4 25.8 31.4s30-5.1 35.8-19.3l144-352z"/></svg>`
-                });
-
-                if (this.first_load)
-                {
-                    this.goToNearestStop();
-                    this.first_load = false;
-                }
-                else
-                {
-                    this.map.removeLayer(this.current_position_marker);
-                    this.map.removeLayer(this.current_position_accuracy_circle);
-                }
-
-                this.current_position_marker = L.marker([this.current_latitude, this.current_longitude], {icon: location_icon}).addTo(this.map);
-                this.current_position_accuracy_circle = L.circle([this.current_latitude, this.current_longitude], {
-                    color: 'blue',
-                    fillColor: '#24a3ff',
-                    fillOpacity: 0.3,
-                    radius: position.coords.accuracy ?? 500
-                }).addTo(this.map);
-            }, () => {
-                console.log('System/OS services disabled', navigator);
+            const marker_style = `transform: scale(2) rotate(${(window.coords.heading ?? 360) - 45}deg)`
+            const location_icon = L.divIcon({
+                className: "location_icon",
+                iconAnchor: [6, 0],
+                labelAnchor: [-6, 0],
+                popupAnchor: [0, -36],
+                html: `<svg xmlns="http://www.w3.org/2000/svg" style="${marker_style}" viewBox="0 0 448 512"><path d="M429.6 92.1c4.9-11.9 2.1-25.6-7-34.7s-22.8-11.9-34.7-7l-352 144c-14.2 5.8-22.2 20.8-19.3 35.8s16.1 25.8 31.4 25.8H224V432c0 15.3 10.8 28.4 25.8 31.4s30-5.1 35.8-19.3l144-352z"/></svg>`
             });
+
+            if (this.first_load)
+            {
+                this.goToNearestStop();
+                this.first_load = false;
+            }
+            else
+            {
+                this.map.removeLayer(this.current_position_marker);
+                this.map.removeLayer(this.current_position_accuracy_circle);
+            }
+
+            this.current_position_marker = L.marker([this.current_latitude, this.current_longitude], {icon: location_icon}).addTo(this.map);
+            this.current_position_accuracy_circle = L.circle([this.current_latitude, this.current_longitude], {
+                color: 'blue',
+                fillColor: '#24a3ff',
+                fillOpacity: 0.3,
+                radius: window.coords.accuracy ?? 500
+            }).addTo(this.map);
         },
 
         goToNearestStop() {
@@ -154,7 +136,9 @@
             this.stops_position.forEach((stop) => {
                 stop_distance.push(this.distance(stop.latitude, stop.longitude, this.current_latitude, this.current_longitude));
             });
-            this.$dispatch('go-to-stop', stop_distance.indexOf(Math.min(...stop_distance)));
+            this.$nextTick(() => {
+                document.dispatchEvent(new CustomEvent("go-to-stop", { detail: stop_distance.indexOf(Math.min(...stop_distance)) }));
+            });
         },
 
         goToPosition(event) {
@@ -225,7 +209,11 @@
 
             document.addEventListener('livewire:navigating', () => {
                 if(this.getETAInterval !== null) this.resetGetETA();
-            })
+            });
+
+            document.addEventListener('go-to-stop', (e) => {
+                this.goToStop(e);
+            });
         },
 
         resetGetETA() {
@@ -243,7 +231,9 @@
             //if (sequence === this.active && !force) return;
             this.active = sequence;
             this.loading = true;
-            this.$dispatch('go-to-position', sequence);
+            this.$nextTick(() => {
+                document.dispatchEvent(new CustomEvent("go-to-position", { detail: sequence }));
+            });
 
             this.etas = [];
             for (let key in this.companies) {

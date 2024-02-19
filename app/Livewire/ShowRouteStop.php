@@ -28,7 +28,6 @@ class ShowRouteStop extends Component
         if (($key = array_search($stop_id, $favorite_stops)) !== false) {
             unset($favorite_stops[$key]);
         }
-//        dd($favorite_stops,$stop_id);
         session()->put('favorite_stops', array_values(array_unique($favorite_stops)));
     }
 }

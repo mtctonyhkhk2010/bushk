@@ -42,16 +42,20 @@
         </div>
         <div class="flex">
             @if($stop['interchangeable'])
+                <button class="btn p-0 btn-ghost">
                 <x-heroicon-o-arrows-right-left class="h-5 w-5 mr-2"
                                                 wire:navigate
                                                 href="/interchange/{{ $route_id }}?stop={{ $stop['id'] }}"/>
+                </button>
             @endif
 
+            <button class="btn p-0 btn-ghost">
             @if(in_array($stop['id'], session()->get('favorite_stops') ?? []))
                 <x-heroicon-s-heart class="h-5 w-5 mr-2" wire:click="removeFavoriteStop({{ $stop['id'] }})"/>
             @else
                 <x-heroicon-o-heart class="h-5 w-5 mr-2" wire:click="addFavoriteStop({{ $stop['id'] }})"/>
             @endif
+            </button>
         </div>
     </div>
 </div>

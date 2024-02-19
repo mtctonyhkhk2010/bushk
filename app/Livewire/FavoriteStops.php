@@ -4,10 +4,10 @@ namespace App\Livewire;
 
 use Livewire\Component;
 
-class FavoriteStop extends Component
+class FavoriteStops extends Component
 {
     public function render()
     {
-        return view('livewire.favorite-stop');
+        return view('livewire.favorite-stops');
     }
 }

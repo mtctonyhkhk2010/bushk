@@ -24,6 +24,24 @@
     <title>{{ isset($title) ? $title.' - '.config('app.name') : config('app.name') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <script>
+        navigator.permissions.query({name:'geolocation'})
+            .then((result) => {
+                    if (result.state === 'granted') {
+                        window.watch_position_id = navigator.geolocation.watchPosition((position) => {
+                            window.coords = position.coords;
+                            const event = new CustomEvent("position-updated");
+                            document.dispatchEvent(event);
+                        });
+                    } else {
+                        console.log('Browser location services disabled', navigator);
+                    }
+                }, () => {
+                    console.log('Browser permissions services unavailable', navigator);
+                }
+            );
+    </script>
 </head>
 <body class="font-sans antialiased bg-base-200/50 dark:bg-base-200">
 
@@ -31,19 +49,19 @@
     {{ $slot }}
 
     <div class="btm-nav h-[56px]">
-        <a>
-            <button>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-            </button>
-        </a>
         <a href="/search" wire:navigate>
             <button class="active">
                 <x-heroicon-o-magnifying-glass class="h-5 w-5"/>
             </button>
         </a>
-        <a>
+        <a href="/favorite-routes" wire:navigate>
             <button>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                <x-heroicon-o-heart class="h-5 w-5"/>
+            </button>
+        </a>
+        <a href="/favorite-stops" wire:navigate>
+            <button>
+                <x-heroicon-o-flag class="h-5 w-5"/>
             </button>
         </a>
     </div>
