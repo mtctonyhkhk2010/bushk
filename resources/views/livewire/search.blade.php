@@ -4,12 +4,12 @@
     </x-layouts.navbar>
     <div class="h-[calc(100svh-112px)]">
         <x-search-tabs wire:model.live="selected_tab" class="h-[calc(100%-2.5rem)] overflow-y-scroll">
-            <x-search-tab name="bus" label="巴士">
+            <x-search-tab name="bus" label="巴士" class="divide-y divide-slate-400/25">
                 @foreach($routes as $route)
                     <x-route-search-item :route="$route"/>
                 @endforeach
             </x-search-tab>
-            <x-search-tab name="minibus" label="小巴">
+            <x-search-tab name="minibus" label="小巴" class="divide-y divide-slate-400/25">
                 @foreach($routes as $route)
                     <x-route-search-item :route="$route"/>
                 @endforeach
