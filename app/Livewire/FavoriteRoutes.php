@@ -11,7 +11,18 @@ class FavoriteRoutes extends Component
 
     public function mount()
     {
-        $this->routes = Route::whereIn('id', session()->get('favorite_routes', []))->get();
+        $this->routes = Route::whereIn('id', session()->get('favorite_routes', []))
+            ->with('stops')
+            ->get();
+
+        foreach ($this->routes as $route)
+        {
+            $route->stops->each(function ($item) {
+                $item->latitude = $item->latitude;
+                $item->longitude = $item->longitude;
+            });
+        }
+
     }
 
     public function render()
