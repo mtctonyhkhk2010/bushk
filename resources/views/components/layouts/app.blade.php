@@ -66,5 +66,11 @@
         </a>
     </div>
 </div>
+
+<div class="toast" wire:offline>
+    <div class="alert alert-info">
+        <span>This device is currently offline.</span>
+    </div>
+</div>
 </body>
 </html>
