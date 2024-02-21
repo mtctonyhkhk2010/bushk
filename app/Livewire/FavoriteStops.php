@@ -13,7 +13,7 @@ class FavoriteStops extends Component
     public function mount()
     {
         $this->stops = Stop::whereIn('id', session()->get('favorite_stops', []))->with('routes')->get();
-        $this->selected_stop = $this->stops->first()?->id;
+        $this->selected_stop = "".$this->stops->first()?->id;
     }
 
     public function render()

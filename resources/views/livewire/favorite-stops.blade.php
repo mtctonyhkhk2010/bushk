@@ -9,13 +9,13 @@
             </div>
         @endif
         <div role="tablist" class="tabs tabs-bordered">
-            @foreach($stops as $stop)
-                <input type="radio" name="stop_{{ $stop->id }}" wire:model="selected_stop" value="{{ $stop->id }}" role="tab" class="tab" aria-label="{{ $stop->name_tc }}" />
-                <div role="tabpanel" class="tab-content">
-                    @foreach($stop->routes->sortBy('name')->sortBy('service_type') as $route)
-                        <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
-                            class="flex items-center justify-start gap-4 p-3 cursor-pointer"
-                             x-data="{
+            <x-stop-tabs wire:model.live="selected_stop" class="h-[calc(100%-2.5rem)] overflow-y-scroll">
+                @foreach($stops as $stop)
+                    <x-search-tab name="{{ $stop->id }}" label="{{ $stop->name_tc }}" class="divide-y divide-slate-400/25">
+                        @foreach($stop->routes->sortBy('name')->sortBy('service_type') as $route)
+                            <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
+                                 class="flex items-center justify-start gap-4 p-3 cursor-pointer"
+                                 x-data="{
         init() {
             this.$watch('etas', () => {
                 this.etas = this.etas.sort((a, b) => {
@@ -70,41 +70,42 @@
         companies: @js($route->companies->keyBy('id')),
 
 }"
-                        >
-                            <div>
-                                <h4 class="min-w-20 font-bold text-lg">
-                                    {{ $route->name }}
-                                    @if($route->service_type != 1)
-                                        <span class="text-xs">特別班</span>
-                                    @endif
-                                </h4>
-                                <div class="text-xs">
-                                    {{ $route->companies->pluck('name_tc')->implode('+') }}
-                                </div>
-                            </div>
-                            <div class="flex flex-col">
+                            >
                                 <div>
-                                    <span class="text-xs">往</span> <span class="text-lg">{{ $route->dest_tc }}</span>
-                                </div>
-
-                            </div>
-                            <div class="flex flex-col ml-auto">
-                                <template x-for="eta in etas">
+                                    <h4 class="min-w-20 font-bold text-lg">
+                                        {{ $route->name }}
+                                        @if($route->service_type != 1)
+                                            <span class="text-xs">特別班</span>
+                                        @endif
+                                    </h4>
                                     <div class="text-xs">
-                                        <span x-text="formatTime(eta.eta)"></span>
-                                        <span x-show="remainingTimeInMinutes(eta.eta) > 0">
+                                        {{ $route->companies->pluck('name_tc')->implode('+') }}
+                                    </div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div>
+                                        <span class="text-xs">往</span> <span class="text-lg">{{ $route->dest_tc }}</span>
+                                    </div>
+
+                                </div>
+                                <div class="flex flex-col ml-auto">
+                                    <template x-for="eta in etas">
+                                        <div class="text-xs">
+                                            <span x-text="formatTime(eta.eta)"></span>
+                                            <span x-show="remainingTimeInMinutes(eta.eta) > 0">
                                 <span x-text="remainingTimeInMinutes(eta.eta)"></span>分鐘
                             </span>
-                                        <span x-show="remainingTimeInMinutes(eta.eta) == 0">
+                                            <span x-show="remainingTimeInMinutes(eta.eta) == 0">
                                 即將到達
                             </span>
-                                    </div>
-                                </template>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endforeach
+                        @endforeach
+                    </x-search-tab>
+                @endforeach
+            </x-stop-tabs>
         </div>
     </div>
 </div>
