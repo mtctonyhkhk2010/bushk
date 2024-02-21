@@ -17,12 +17,17 @@
             document.addEventListener('position-updated', (e) => {
                 this.getNearestStop();
             });
+            this.$watch('etas', () => {
+                this.etas = this.etas.sort((a, b) => {
+                    return a.timestamp - b.timestamp;
+                })
+            });
         },
         getNearestStop() {
             if(window.coords === undefined) return;
             let stop_distance = [];
 
-            this.stops.forEach((stop) => {
+            this.stops[this.first_company_id].forEach((stop) => {
                 stop_distance.push(window.distance(stop.latitude, stop.longitude, window.coords.latitude, window.coords.longitude));
             });
 
@@ -37,7 +42,7 @@
 
                 const company = this.companies[key];
 
-                const fetchEta = window.fetchEta(company.co, this.stops[this.nearest_stop_index]['stop_code'], @js($route->name), @js($route->service_type), @js($route->gtfs_id), company.pivot.bound);
+                const fetchEta = window.fetchEta(company.co, this.stops[company.id][this.nearest_stop_index]['stop_code'], @js($route->name), @js($route->service_type), @js($route->gtfs_id), company.pivot.bound);
 
                 fetchEta.then((temp_etas) => {
                     temp_etas.forEach((eta) => {
@@ -67,7 +72,8 @@
         last_update: null,
         etas: [],
         companies: @js($route->companies->keyBy('id')),
-stops: @js($route->stops)
+        first_company_id: @js(array_key_first($stops[$route->id])),
+stops: @js($stops[$route->id])
 
 }"
             >
@@ -79,13 +85,13 @@ stops: @js($route->stops)
                         <span class="text-xs">往</span> <span class="text-lg">{{ $route->dest_tc }}</span>
                     </div>
                     <template x-if="nearest_stop_index">
-                        <div class="text-xs" x-text="stops[nearest_stop_index].name_tc"></div>
+                        <div class="text-xs" x-text="stops[first_company_id][nearest_stop_index]['name_tc']"></div>
                     </template>
 
                 </div>
                 <div class="flex flex-col ml-auto">
                     <template x-for="eta in etas">
-                        <div>
+                        <div class="text-xs">
                             <span x-text="formatTime(eta.eta)"></span>
                             <span x-show="remainingTimeInMinutes(eta.eta) > 0">
                                 <span x-text="remainingTimeInMinutes(eta.eta)"></span>分鐘

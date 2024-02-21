@@ -225,53 +225,15 @@
 
                 const company = this.companies[key];
 
-                //console.log(this.stops[company.id])
-                let path;
-                let stop_code = this.stops[company.id][sequence]['stop_code'];
-                if (company.co === 'kmb') {
-                    path = `https://data.etabus.gov.hk/v1/transport/kmb/eta/${stop_code}/${this.route_name}/${this.service_type}`;
-                }
-                if (company.co === 'ctb') {
-                    path = `https://rt.data.gov.hk//v2/transport/citybus/eta/CTB/${stop_code}/${this.route_name}`;
-                }
-                if (company.co === 'gmb') {
-                    path = `https://data.etagmb.gov.hk/eta/route-stop/${this.gtfs_id}/${stop_code}`;
-                }
-                //console.log(path)
-                const response = await fetch(path);
-                const data = await response.json();
-                this.loading = false;
+                const fetchEta = window.fetchEta(company.co, this.stops[company.id][sequence]['stop_code'], this.route_name,
+                    this.service_type, this.gtfs_id, company.pivot.bound);
 
-                if (company.co === 'kmb' || company.co === 'ctb') {
-                    data.data.forEach((item) => {
-                        if (item.eta === "" || item.eta === null || item.dir !== company.pivot.bound) return;
-
-                        this.etas.push({
-                            timestamp: Date.parse(item.eta),
-                            eta: item.eta,
-                            co: item.co,
-                            remark: item.rmk_tc,
-                        });
+                fetchEta.then((temp_etas) => {
+                    this.loading = false;
+                    temp_etas.forEach((eta) => {
+                        this.etas.push(eta);
                     });
-                }
-
-                if (company.co === 'gmb') {
-                    data.data.forEach((item) => {
-                        if ((company.pivot.bound === "I" && item.route_seq === 1) ||
-                            (company.pivot.bound === "O" && item.route_seq === 2)) return;
-
-                        item.eta.forEach((eta) => {
-                            if (eta.timestamp === "" || eta.timestamp === null) return;
-
-                            this.etas.push({
-                                timestamp: Date.parse(eta.timestamp),
-                                eta: eta.timestamp,
-                                co: 'gmb',
-                                remark: eta.remarks_tc,
-                            });
-                        })
-                    });
-                }
+                });
             }
         },
 
