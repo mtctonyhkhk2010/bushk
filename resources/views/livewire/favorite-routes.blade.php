@@ -77,9 +77,17 @@ stops: @js($stops[$route->id])
 
 }"
             >
-                <h4 class="min-w-20 font-bold text-lg">
-                    {{ $route->name }}
-                </h4>
+                <div>
+                    <h4 class="min-w-20 font-bold text-lg">
+                        {{ $route->name }}
+                        @if($route->service_type != 1)
+                            <span class="text-xs">特別班</span>
+                        @endif
+                    </h4>
+                    <div class="text-xs">
+                        {{ $route->companies->pluck('name_tc')->implode('+') }}
+                    </div>
+                </div>
                 <div class="flex flex-col">
                     <div>
                         <span class="text-xs">往</span> <span class="text-lg">{{ $route->dest_tc }}</span>
