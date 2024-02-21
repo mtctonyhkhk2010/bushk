@@ -15,6 +15,7 @@
                                             wire:navigate
                                             href="/interchange/{{ $route->id }}"/>
             <livewire:toggle-favorite-route :route_id="$route->id"/>
+            <x-heroicon-o-arrow-up-right class="h-5 w-5 mr-3"/>
         </x-slot:end>
     </x-layouts.navbar>
     <div class="h-[calc(100svh-112px)]">
@@ -137,7 +138,7 @@
         goToNearestStop() {
             let stop_distance = []
             this.stops_position.forEach((stop) => {
-                stop_distance.push(this.distance(stop.latitude, stop.longitude, this.current_latitude, this.current_longitude));
+                stop_distance.push(window.distance(stop.latitude, stop.longitude, this.current_latitude, this.current_longitude));
             });
             this.$nextTick(() => {
                 document.dispatchEvent(new CustomEvent("go-to-stop", { detail: stop_distance.indexOf(Math.min(...stop_distance)) }));
@@ -147,26 +148,6 @@
         goToPosition(event) {
             const sequence = event.detail;
             this.map.panTo(new L.LatLng(this.stops_position[sequence].latitude, this.stops_position[sequence].longitude));
-        },
-
-        distance(lat1, lon1, lat2, lon2) {
-            if ((lat1 === lat2) && (lon1 === lon2)) {
-                return 0;
-            }
-            else {
-                let radlat1 = Math.PI * lat1/180;
-                let radlat2 = Math.PI * lat2/180;
-                let theta = lon1-lon2;
-                let radtheta = Math.PI * theta/180;
-                let dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-                if (dist > 1) {
-                    dist = 1;
-                }
-                dist = Math.acos(dist);
-                dist = dist * 180/Math.PI;
-                dist = dist * 60 * 1.1515;
-                return dist * 1.609344;
-            }
         }
     }));
 

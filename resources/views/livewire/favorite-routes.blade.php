@@ -12,42 +12,61 @@
             <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
                  class="flex items-center justify-start gap-4 p-3 cursor-pointer"
                  x-data="{
-init() {
-this.getNearestStop();
-document.addEventListener('position-updated', (e) => {
-this.getNearestStop();
-});
+        init() {
+            this.getNearestStop();
+            document.addEventListener('position-updated', (e) => {
+                this.getNearestStop();
+            });
         },
         getNearestStop() {
             if(window.coords === undefined) return;
             let stop_distance = [];
 
             this.stops.forEach((stop) => {
-                stop_distance.push(this.distance(stop.latitude, stop.longitude, window.coords.latitude, window.coords.longitude));
+                stop_distance.push(window.distance(stop.latitude, stop.longitude, window.coords.latitude, window.coords.longitude));
             });
 
             this.nearest_stop_index = stop_distance.indexOf(Math.min(...stop_distance));
+
+            if(this.last_update === null || Date.now() - this.last_update > 30*1000) this.getETA();
         },
-        distance(lat1, lon1, lat2, lon2) {
-            if ((lat1 === lat2) && (lon1 === lon2)) {
-                return 0;
+        getETA() {
+            this.etas = [];
+            for (let key in this.companies) {
+                if (!this.companies.hasOwnProperty(key)) continue;
+
+                const company = this.companies[key];
+
+                const fetchEta = window.fetchEta(company.co, this.stops[this.nearest_stop_index]['stop_code'], @js($route->name), @js($route->service_type), @js($route->gtfs_id), company.pivot.bound);
+
+                fetchEta.then((temp_etas) => {
+                    temp_etas.forEach((eta) => {
+                        this.etas.push(eta);
+                    });
+                });
             }
-            else {
-                let radlat1 = Math.PI * lat1/180;
-                let radlat2 = Math.PI * lat2/180;
-                let theta = lon1-lon2;
-                let radtheta = Math.PI * theta/180;
-                let dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-                if (dist > 1) {
-                    dist = 1;
-                }
-                dist = Math.acos(dist);
-                dist = dist * 180/Math.PI;
-                dist = dist * 60 * 1.1515;
-                return dist * 1.609344;
-            }
+            this.last_update = Date.now();
         },
+        formatTime(time) {
+            const date = new Date(time);
+            return this.padTo2Digits(date.getHours()) + ':' + this.padTo2Digits(date.getMinutes());
+        },
+        padTo2Digits(num) {
+            return String(num).padStart(2, '0');
+        },
+        remainingTimeInMinutes(time) {
+            const date = new Date(time);
+            const now = new Date();
+            const diffMs = (date - now); // milliseconds between now & Christmas
+            const diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
+            if (diffMins <= 0) return 0;
+            return diffMins;
+        },
+
         nearest_stop_index: null,
+        last_update: null,
+        etas: [],
+        companies: @js($route->companies->keyBy('id')),
 stops: @js($route->stops)
 
 }"
@@ -59,12 +78,23 @@ stops: @js($route->stops)
                     <div>
                         <span class="text-xs">往</span> <span class="text-lg">{{ $route->dest_tc }}</span>
                     </div>
-                    <div class="text-xs" x-text="stops[nearest_stop_index].name_tc">
+                    <template x-if="nearest_stop_index">
+                        <div class="text-xs" x-text="stops[nearest_stop_index].name_tc"></div>
+                    </template>
 
-                    </div>
                 </div>
-                <div>
-
+                <div class="flex flex-col ml-auto">
+                    <template x-for="eta in etas">
+                        <div>
+                            <span x-text="formatTime(eta.eta)"></span>
+                            <span x-show="remainingTimeInMinutes(eta.eta) > 0">
+                                <span x-text="remainingTimeInMinutes(eta.eta)"></span>分鐘
+                            </span>
+                            <span x-show="remainingTimeInMinutes(eta.eta) == 0">
+                                即將到達
+                            </span>
+                        </div>
+                    </template>
                 </div>
             </div>
         @endforeach

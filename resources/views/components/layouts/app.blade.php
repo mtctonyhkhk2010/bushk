@@ -36,6 +36,7 @@
                         });
                     } else {
                         console.log('Browser location services disabled', navigator);
+                        navigator.geolocation.getCurrentPosition(() => {})
                     }
                 }, () => {
                     console.log('Browser permissions services unavailable', navigator);
