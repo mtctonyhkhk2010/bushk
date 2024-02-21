@@ -92,7 +92,7 @@ stops: @js($stops[$route->id])
                     <div>
                         <span class="text-xs">往</span> <span class="text-lg">{{ $route->dest_tc }}</span>
                     </div>
-                    <template x-if="nearest_stop_index">
+                    <template x-if="nearest_stop_index !== null">
                         <div class="text-xs" x-text="stops[first_company_id][nearest_stop_index]['name_tc']"></div>
                     </template>
 
