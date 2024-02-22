@@ -44,12 +44,12 @@
             );
     </script>
 </head>
-<body class="font-sans antialiased bg-base-200/50 dark:bg-base-200">
+<body class="font-sans antialiased bg-white dark:bg-base-200">
 
 <div class="h-full">
     {{ $slot }}
 
-    <div class="btm-nav h-[56px]">
+    <div class="btm-nav bg-[#7dcfeb] dark:bg-base-200 h-[56px]">
         <a href="/search" wire:navigate>
             <button class="active">
                 <x-heroicon-o-magnifying-glass class="h-5 w-5"/>

@@ -1,6 +1,6 @@
 @props(['title'])
 
-<div class="navbar h-[56px] min-h-[56px]">
+<div class="navbar h-[56px] min-h-[56px] bg-[#7dcfeb] dark:bg-base-200">
     <div class="navbar-start">
         @if(isset($start)) {{ $start }} @endif
     </div>

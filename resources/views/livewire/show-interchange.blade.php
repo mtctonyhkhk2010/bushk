@@ -40,7 +40,7 @@
                     </button>
                 </h2>
 
-                <div x-show="expanded" x-collapse class="px-3 bg-black">
+                <div x-show="expanded" x-collapse class="px-3 bg-slate-100 dark:bg-black">
                     @foreach($interchanges[$stop->id] as $route)
                         <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
                             class="flex items-center justify-start gap-4 py-3 cursor-pointer">

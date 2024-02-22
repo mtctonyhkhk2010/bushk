@@ -1,4 +1,4 @@
-<div class="bg-base-200"
+<div class="dark:bg-base-200"
      id="stop_{{ $stop['pivot']['sequence'] }}"
      wire:key="stop_{{ $stop['pivot']['sequence'] }}"
      x-data="{
@@ -21,7 +21,7 @@
             <span>終點站</span>
         @endif
     </div>
-    <div class="p-3 bg-black flex justify-between items-center" x-show="expanded" x-collapse >
+    <div class="p-3 bg-slate-100 dark:bg-black flex justify-between items-center" x-show="expanded" x-collapse >
         <div>
             <div class="loader" x-show="loading && active === sequence"></div>
             <div x-show="!loading && etas.length === 0">
