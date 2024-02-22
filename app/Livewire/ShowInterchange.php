@@ -23,9 +23,16 @@ class ShowInterchange extends Component
     {
         $interchanges = $this->route->interchanges()->get()->groupBy('pivot.from_stop_id');
 
-        $interchange_stops = Stop::whereIn('id', $interchanges->keys()->reject(function ($value) {
-            return $value == '';
-        }))->get();
+        $interchange_stops = Stop::leftjoin('route_stop', 'stops.id', '=', 'route_stop.stop_id')
+            ->leftjoin('routes', 'routes.id', '=', 'route_stop.route_id')
+            ->whereIn('stops.id', $interchanges->keys()->reject(function ($value) {
+                return $value == '';
+            }))
+            ->where('routes.id', $this->route->id)
+            ->orderBy('route_stop.sequence')
+            ->select('stops.*')
+            ->get();
+
 //        dd($interchanges[2930],$interchange_stops);
         return view('livewire.show-interchange', compact('interchanges', 'interchange_stops'));
     }
