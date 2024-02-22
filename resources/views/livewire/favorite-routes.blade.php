@@ -3,7 +3,7 @@
 
     </x-layouts.navbar>
     <div class="h-[calc(100svh-112px)] divide-y divide-slate-400/25">
-        @if(empty($routes))
+        @if($routes->isEmpty())
             <div class="p-3">
                 未有收藏路線
             </div>
