@@ -47,7 +47,7 @@
 
                 const company = this.companies[key];
 
-                const fetchEta = window.fetchEta(company.co, this.stops[company.id][this.nearest_stop_index]['stop_code'], @js($route->name), @js($route->service_type), @js($route->gtfs_id), company.pivot.bound);
+                const fetchEta = window.fetchEta(company.co, this.stops[company.id][this.nearest_stop_index]['stop_code'], @js($route->name), @js($route->service_type), @js($route->gtfs_id), company.pivot.bound, @js($route->nlb_id));
 
                 fetchEta.then((temp_etas) => {
                     temp_etas.forEach((eta) => {

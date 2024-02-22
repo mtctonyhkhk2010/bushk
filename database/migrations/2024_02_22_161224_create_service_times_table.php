@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('route_stop', function (Blueprint $table) {
+        Schema::create('service_times', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
             $table->foreignIdFor(\App\Models\Route::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\Stop::class)->constrained()->cascadeOnDelete();
-
-            $table->unsignedInteger('sequence');
-            $table->unsignedInteger('fare')->nullable();
-            $table->unsignedInteger('fare_holiday')->nullable();
+            $table->integer('weekday_id');
+            $table->string('weekday');
+            $table->string('start')->nullable();
+            $table->string('end')->nullable();
+            $table->integer('frequency_min')->nullable();
         });
     }
 
@@ -26,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('route_stop');
+        Schema::dropIfExists('service_times');
     }
 };

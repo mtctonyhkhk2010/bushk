@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('name')->index();
             $table->string('service_type')->nullable();
             $table->string('gtfs_id')->nullable()->index();
+            $table->unsignedInteger('nlb_id')->nullable();
+            $table->unsignedInteger('journey_time')->nullable();
             $table->string('orig_tc');
             $table->string('orig_en');
             $table->string('dest_tc');

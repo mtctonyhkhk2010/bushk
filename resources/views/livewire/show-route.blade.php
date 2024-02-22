@@ -226,7 +226,7 @@
                 const company = this.companies[key];
 
                 const fetchEta = window.fetchEta(company.co, this.stops[company.id][sequence]['stop_code'], this.route_name,
-                    this.service_type, this.gtfs_id, company.pivot.bound);
+                    this.service_type, this.gtfs_id, company.pivot.bound, @js($route->nlb_id));
 
                 fetchEta.then((temp_etas) => {
                     this.loading = false;

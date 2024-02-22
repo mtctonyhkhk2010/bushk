@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Route extends Model
 {
@@ -29,5 +30,10 @@ class Route extends Model
         return $this->belongsToMany(Route::class, 'interchange', 'from_route_id', 'to_route_id')
             ->withPivot(['from_stop_id', 'to_stop_id', 'validity_minutes', 'discount_mode', 'discount', 'detail', 'success_cnt', 'spec_remark_en', 'spec_remark_tc'])
             ->using(Interchange::class);
+    }
+
+    public function serviceTimes(): HasMany
+    {
+        return $this->hasMany(ServiceTime::class);
     }
 }

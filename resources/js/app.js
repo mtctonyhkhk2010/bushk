@@ -1,8 +1,9 @@
 import './bootstrap';
 
-window.fetchEta = async (company, stop_code, route_name = null, service_type = null, gtfs_id = null, bound = null) =>
+window.fetchEta = async (company, stop_code, route_name = null, service_type = null, gtfs_id = null, bound = null, nlb_id = null) =>
 {
     let path;
+    let fetch_data = {};
     let etas = [];
     if (company === 'kmb') {
         path = `https://data.etabus.gov.hk/v1/transport/kmb/eta/${stop_code}/${route_name}/${service_type}`;
@@ -13,8 +14,15 @@ window.fetchEta = async (company, stop_code, route_name = null, service_type = n
     if (company === 'gmb') {
         path = `https://data.etagmb.gov.hk/eta/route-stop/${gtfs_id}/${stop_code}`;
     }
+    if (company === 'nlb') {
+        path = `https://rt.data.gov.hk/v1/transport/nlb/stop.php?action=estimatedArrivals`;
+        fetch_data = {
+            method: "POST",
+            body: JSON.stringify({routeId: nlb_id, stopId: stop_code, language: "zh"})
+        }
+    }
 
-    const response = await fetch(path);
+    const response = await fetch(path, fetch_data);
     const data = await response.json();
 
     if (company === 'kmb' || company === 'ctb') {
@@ -45,6 +53,19 @@ window.fetchEta = async (company, stop_code, route_name = null, service_type = n
                     remark: eta.remarks_tc,
                 });
             })
+        });
+    }
+
+    if (company === 'nlb') {
+        data.estimatedArrivals.forEach((item) => {
+            if (item.estimatedArrivalTime === "" || item.estimatedArrivalTime === null) return;
+
+            etas.push({
+                timestamp: Date.parse(item.estimatedArrivalTime),
+                eta: item.estimatedArrivalTime,
+                co: 'nlb',
+                remark: '',
+            });
         });
     }
 
