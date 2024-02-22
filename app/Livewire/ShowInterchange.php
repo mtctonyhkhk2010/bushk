@@ -33,7 +33,9 @@ class ShowInterchange extends Component
             ->select('stops.*')
             ->get();
 
+        $has_any_stop = $interchanges->keys()->contains('');
+
 //        dd($interchanges[2930],$interchange_stops);
-        return view('livewire.show-interchange', compact('interchanges', 'interchange_stops'));
+        return view('livewire.show-interchange', compact('interchanges', 'interchange_stops', 'has_any_stop'));
     }
 }

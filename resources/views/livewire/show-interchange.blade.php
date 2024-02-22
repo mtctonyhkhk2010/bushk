@@ -18,9 +18,11 @@
         @endif
         @if($interchange_stops->isNotEmpty())
         <div x-data="{ active: {{ $target_stop ?? $interchange_stops->first()->id }} }" class="mx-auto max-w-3xl w-full min-h-[16rem] space-y-4">
-            @foreach($interchange_stops as $stop)
+            @foreach($interchange_stops->when($has_any_stop, function ($collection) {
+                return $collection->push(['id' => '']);
+            }) as $stop)
             <div x-data="{
-        id: {{ $stop->id }},
+        id: @js($stop['id']),
         get expanded() {
             return this.active === this.id
         },
@@ -34,14 +36,14 @@
                         :aria-expanded="expanded"
                         class="flex w-full items-center justify-between p-3 text-xl font-bold"
                     >
-                        <span>{{ $stop->name_tc }}</span>
+                        <span>{{ $stop['name_tc'] ?? '任何能接駁第二程路線的巴士站' }}</span>
                         <span x-show="expanded" aria-hidden="true" class="ml-4">&minus;</span>
                         <span x-show="!expanded" aria-hidden="true" class="ml-4">&plus;</span>
                     </button>
                 </h2>
 
                 <div x-show="expanded" x-collapse class="px-3 bg-slate-100 dark:bg-black">
-                    @foreach($interchanges[$stop->id] as $route)
+                    @foreach($interchanges[$stop['id']] as $route)
                         <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
                             class="flex items-center justify-start gap-4 py-3 cursor-pointer">
                             <h4 class="min-w-14 font-bold text-lg">
@@ -49,7 +51,7 @@
                             </h4>
                             <div class="flex flex-col">
                                 <div class="">
-                                    往 {{ $route->dest_tc }}
+                                    <span class="text-xs">往</span> {{ $route->dest_tc }}
                                 </div>
                                 <div class>
                                     {{ $route->pivot->validity_minutes }}分鐘內轉乘
