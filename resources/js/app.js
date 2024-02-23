@@ -14,12 +14,18 @@ window.fetchEta = async (company, stop_code, route_name = null, service_type = n
     if (company === 'gmb') {
         path = `https://data.etagmb.gov.hk/eta/route-stop/${gtfs_id}/${stop_code}`;
     }
+    if (company === 'lrtfeeder') {
+        path = `https://rt.data.gov.hk/v1/transport/mtr/bus/getSchedule`;
+        fetch_data.headers = {
+            "Content-Type": "application/json",
+        };
+        fetch_data.method = "POST";
+        fetch_data.body = JSON.stringify({routeName: route_name, language: "zh"});
+    }
     if (company === 'nlb') {
         path = `https://rt.data.gov.hk/v1/transport/nlb/stop.php?action=estimatedArrivals`;
-        fetch_data = {
-            method: "POST",
-            body: JSON.stringify({routeId: nlb_id, stopId: stop_code, language: "zh"})
-        }
+        fetch_data.method = "POST";
+        fetch_data.body = JSON.stringify({routeId: nlb_id, stopId: stop_code, language: "zh"});
     }
 
     const response = await fetch(path, fetch_data);
@@ -66,6 +72,26 @@ window.fetchEta = async (company, stop_code, route_name = null, service_type = n
                 co: 'nlb',
                 remark: '',
             });
+        });
+    }
+
+    if (company === 'lrtfeeder') {
+        data.busStop.forEach((item) => {
+            if (item.busStopId === stop_code)
+            {
+                item.bus.forEach((bus) => {
+                    let timeObject = new Date();
+                    const milliseconds = bus.departureTimeInSecond * 1000;
+                    timeObject = new Date(timeObject.getTime() + milliseconds);
+
+                    etas.push({
+                        timestamp: timeObject.getTime(),
+                        eta: timeObject.toISOString(),
+                        co: 'lrtfeeder',
+                        remark: '',
+                    });
+                })
+            }
         });
     }
 

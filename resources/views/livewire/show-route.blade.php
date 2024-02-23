@@ -83,7 +83,7 @@
             }).addTo(this.map);
             let polylinePoints = [];
             this.stops_position.forEach((stop, sequence) => {
-                L.marker([stop.latitude, stop.longitude], {icon: stop_icon}).addTo(this.map).on('mouseover', (e) => {
+                L.marker([stop.latitude, stop.longitude], {icon: stop_icon}).addTo(this.map).on('click', (e) => {
                     this.$dispatch('go-to-stop', sequence);
                 });
                 polylinePoints.push([stop.latitude, stop.longitude]);
