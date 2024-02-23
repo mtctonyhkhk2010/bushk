@@ -23,15 +23,15 @@ class Search extends Component
         $query = Route::query();
 
         $query->when($this->selected_tab == 'bus', function (Builder $query) {
-            $query->whereHas('companies', function (Builder $query) {
-                $query->whereIn('co', ['kmb', 'ctb', 'nlb', 'lrtfeeder']);
-            });
+            $query->join('company_route', 'routes.id', '=', 'company_route.route_id')
+                ->join('companies', 'companies.id', '=', 'company_route.company_id')
+                ->whereIn('companies.co', ['kmb', 'ctb', 'nlb', 'lrtfeeder']);
         });
 
         $query->when($this->selected_tab == 'minibus', function (Builder $query) {
-            $query->whereHas('companies', function (Builder $query) {
-                $query->whereIn('co', ['gmb']);
-            });
+            $query->join('company_route', 'routes.id', '=', 'company_route.route_id')
+                ->join('companies', 'companies.id', '=', 'company_route.company_id')
+                ->whereIn('companies.co', ['gmb']);
         });
 
         $query->when(!empty($this->search), function (Builder $query) {
@@ -51,7 +51,15 @@ class Search extends Component
             if (str_contains('ABCDEFGHIJKLMNOPQRSTUVWXYZ', $character)) $possible_alphabet[] = $character;
         }
 
-        $routes = $query->with('companies')->limit(50)->get();
+        $routes = $query->with('companies')
+            ->orderByRaw('LENGTH(name)')
+            ->orderBy('name')
+            ->orderBy('companies.id')
+            ->orderBy('company_route.bound')
+            ->orderBy('service_type')
+            ->limit(50)
+            ->select('routes.*')
+            ->get();
 
         return view('livewire.search', compact('routes', 'possible_number', 'possible_alphabet'));
     }
