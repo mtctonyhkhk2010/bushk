@@ -41,7 +41,9 @@ class Search extends Component
 
         $character_query = $query->clone();
 
-        $possible_characters = $character_query->selectRaw('SUBSTRING(name , ?, 1) AS possible', [strlen($this->search) + 1])->distinct()->get()->pluck('possible');
+        $possible_characters =  Cache::rememberForever('possible_characters_' . $this->selected_tab . '_' . $this->search, function () use ($character_query) {
+            return $character_query->selectRaw('SUBSTRING(name , ?, 1) AS possible', [strlen($this->search) + 1])->distinct()->get()->pluck('possible');
+        });
         $possible_number = [];
         $possible_alphabet = [];
 
