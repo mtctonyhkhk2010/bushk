@@ -167,6 +167,7 @@ class getRouteFareList extends Command
 //                }
 //            }
         }
+        Cache::flush();
 
         echo now()->toDateTimeString();
     }

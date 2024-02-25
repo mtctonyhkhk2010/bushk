@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Route;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Session;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -51,15 +52,17 @@ class Search extends Component
             if (str_contains('ABCDEFGHIJKLMNOPQRSTUVWXYZ', $character)) $possible_alphabet[] = $character;
         }
 
-        $routes = $query->with('companies')
-            ->orderByRaw('LENGTH(name)')
-            ->orderBy('name')
-            ->orderBy('companies.id')
-            ->orderBy('company_route.bound')
-            ->orderBy('service_type')
-            ->limit(50)
-            ->select('routes.*')
-            ->get();
+        $routes = Cache::rememberForever('search_' . $this->selected_tab . '_' . $this->search, function () use ($query) {
+            return $query->with('companies')
+                ->orderByRaw('LENGTH(name)')
+                ->orderBy('name')
+                ->orderBy('companies.id')
+                ->orderBy('company_route.bound')
+                ->orderBy('service_type')
+                ->limit(50)
+                ->select('routes.*')
+                ->get();
+        });
 
         return view('livewire.search', compact('routes', 'possible_number', 'possible_alphabet'));
     }
