@@ -67,6 +67,13 @@
                                     @if($route->pivot->discount_mode == 'total')
                                         兩程合共${{ $route->pivot->discount }}
                                     @endif
+                                    @if($route->pivot->discount_mode == 'reward')
+                                        @if($route->pivot->discount > 0)
+                                            回贈${{ $route->pivot->discount }}
+                                        @else
+                                            回贈首程車費
+                                        @endif
+                                    @endif
                                 </div>
                             </div>
                         </div>
