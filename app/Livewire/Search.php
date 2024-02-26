@@ -54,6 +54,8 @@ class Search extends Component
             if (str_contains('ABCDEFGHIJKLMNOPQRSTUVWXYZ', $character)) $possible_alphabet[] = $character;
         }
 
+        sort($possible_alphabet);
+
         $routes = Cache::rememberForever('search_' . $this->selected_tab . '_' . $this->search, function () use ($query) {
             return $query->with('companies')
                 ->orderByRaw('LENGTH(name)')
