@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Route;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 
 class FavoriteRoutes extends Component
@@ -19,7 +20,9 @@ class FavoriteRoutes extends Component
             $in_string .= "('{$route['name']}', '{$route['dest']}'),";
         }
         $in_string = rtrim($in_string, ',');
-        $this->routes = Route::whereRaw("(name, dest_en) in ({$in_string})")
+
+        $this->routes = $in_string == '()' ? [] :
+            Route::whereRaw("(name, dest_en) in ({$in_string})")
             ->with('stops.company')
             ->get();
 
