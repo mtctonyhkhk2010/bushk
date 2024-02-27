@@ -15,7 +15,6 @@
                                             wire:navigate
                                             href="/interchange/{{ $route->id }}"/>
             <livewire:toggle-favorite-route :route_id="$route->id"/>
-            <x-heroicon-o-arrow-up-right class="h-5 w-5 mr-3"/>
         </x-slot:end>
     </x-layouts.navbar>
     <div class="h-[calc(100svh-112px)]">
