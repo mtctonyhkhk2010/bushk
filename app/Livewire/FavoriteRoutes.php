@@ -21,7 +21,7 @@ class FavoriteRoutes extends Component
         }
         $in_string = rtrim($in_string, ',');
 
-        $this->routes = $in_string == '()' ? [] :
+        $this->routes = empty($in_string) ? collect() :
             Route::whereRaw("(name, dest_en) in ({$in_string})")
             ->with('stops.company')
             ->get();
