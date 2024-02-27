@@ -3,9 +3,9 @@
         <x-slot:start>
             @if(isset($reverse_route))
             <div class="flex divide-x" wire:navigate href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}">
-                <div class="flex flex-col justify-items-center">
+                <div class="flex flex-col justify-items-center max-w-14">
                     <x-heroicon-o-arrow-uturn-down class="h-5 w-full"/>
-                    <div>對頭線</div>
+                    <div class="w-full text-center">對頭線</div>
                 </div>
             </div>
             @endif
