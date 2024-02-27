@@ -52,12 +52,15 @@
     <div class="btm-nav bg-[#7dcfeb] dark:bg-base-200 h-[56px]">
         <button class="{{ request()->is('search*') ? 'active' : ''}}" href="/search" wire:navigate>
             <x-heroicon-o-magnifying-glass class="h-5 w-5"/>
+            <span class="btm-nav-label">搜尋</span>
         </button>
         <button class="{{ request()->is('favorite-routes*') ? 'active' : ''}}" href="/favorite-routes" wire:navigate>
             <x-heroicon-o-heart class="h-5 w-5"/>
+            <span class="btm-nav-label">已收藏路線</span>
         </button>
         <button class="{{ request()->is('favorite-stops*') ? 'active' : ''}}" href="/favorite-stops" wire:navigate>
             <x-heroicon-o-flag class="h-5 w-5"/>
+            <span class="btm-nav-label">已收藏車站</span>
         </button>
     </div>
 </div>
