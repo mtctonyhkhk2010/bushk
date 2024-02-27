@@ -31,8 +31,11 @@ class getCtbBBIDataCommand extends Command
             {
                 if ($bbi['legType'] != 1) continue;
 
-                $from_dest = trim(self::delete_all_between('(' , ')', trim($bbi['direction'])));
-                $from_route = Route::where('name', $ctb_route)->where('dest_tc', 'like', $from_dest.'%')->first();
+                $from_dest = trim(substr($bbi['direction'], 0, strpos($bbi['direction'], "(")));
+                $from_route = Route::where('name', $ctb_route)->where('dest_tc', 'like', $from_dest.'%')
+                    ->whereHas('companies', function ($query) {
+                        $query->where('co', 'ctb');
+                })->first();
 
                 if (!isset($from_route))
                 {
@@ -49,7 +52,7 @@ class getCtbBBIDataCommand extends Command
                 foreach ($bbi['ir'] as $record)
                 {
                     $to_route_name = preg_replace("/[^a-zA-Z0-9]+/", "", $record['route']);
-                    $to_dest = trim(self::delete_all_between('(' , ')', $record['direction']));
+                    $to_dest = trim(substr($record['direction'], 0, strpos($record['direction'], "(")));
                     $to_route = Route::where('name', $to_route_name)->where('dest_tc', 'like', '%'.$to_dest.'%')->first();
                     if (!isset($to_route))
                     {
@@ -95,6 +98,8 @@ class getCtbBBIDataCommand extends Command
 
                     $xchange = $record['stopName'];
                     if ($xchange == '匯豐總行大廈, 皇后大道中') $xchange = '滙豐總行大廈, 皇后大道中';
+                    if ($xchange == '恒生銀行總行, 干諾道中') $xchange = '恒生銀行總行大廈, 干諾道中';
+                    if ($xchange == '恒生銀行總行, 干諾道中') $xchange = '恒生銀行總行大廈, 干諾道中';
                     if ($xchange != '任何能接駁第二程路線的巴士站')
                     {
                         //find by original name first
@@ -108,8 +113,24 @@ class getCtbBBIDataCommand extends Command
 
                         if (!isset($stop))
                         {
+                            $xchange = mb_substr($xchange, 0, 3);
+                            $stop = Stop::where('name_tc', 'like', $xchange.'%')->whereHas('routes', function ($query) use ($from_route) {
+                                $query->where('id', $from_route->id);
+                            })->first();
+                        }
+
+                        if (!isset($stop))
+                        {
+                            $xchange = mb_substr($xchange, 0, 3);
+                            $stop = Stop::where('name_tc', 'like', $xchange.'%')->whereHas('routes', function ($query) use ($from_route) {
+                                $query->where('id', $from_route->id);
+                            })->first();
+                        }
+
+                        if (!isset($stop))
+                        {
                             echo 'cannot find stop'.PHP_EOL;
-                            dd($from_route->name,$to_route->name,$stop->name);
+                            dd($from_route->name, $from_route->dest_tc,$to_route->name,$xchange);
                         }
 
                         $from_stop = Stop::join('route_stop', 'route_stop.stop_id', '=', 'stops.id')
