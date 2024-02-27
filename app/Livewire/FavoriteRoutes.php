@@ -12,7 +12,14 @@ class FavoriteRoutes extends Component
 
     public function mount()
     {
-        $this->routes = Route::whereIn('id', session()->get('favorite_routes', []))
+        $favorite_routes = session()->get('favorite_routes_2', []);
+        $in_string = '';
+        foreach ($favorite_routes as $route)
+        {
+            $in_string .= "('{$route['name']}', '{$route['dest']}'),";
+        }
+        $in_string = rtrim($in_string, ',');
+        $this->routes = Route::whereRaw("(name, dest_en) in ({$in_string})")
             ->with('stops.company')
             ->get();
 
