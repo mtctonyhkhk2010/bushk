@@ -8,6 +8,7 @@
                 未有收藏車站
             </div>
         @endif
+        @if($stops->isNotEmpty())
         <div role="tablist" class="tabs tabs-bordered">
             <x-stop-tabs wire:model.live="selected_stop" class="h-[calc(100%-2.5rem)] overflow-y-scroll">
                 @foreach($stops as $stop)
@@ -107,5 +108,6 @@
                 @endforeach
             </x-stop-tabs>
         </div>
+        @endif
     </div>
 </div>
