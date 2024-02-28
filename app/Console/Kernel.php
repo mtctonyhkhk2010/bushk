@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         $schedule->command('app:get-route-fare-list')->dailyAt('04:00');
         $schedule->command('app:get-kmb-b-b-i-data')->dailyAt('04:15');
+        $schedule->command('app:get-ctb-b-b-i-data')->dailyAt('04:30');
     }
 
     /**
