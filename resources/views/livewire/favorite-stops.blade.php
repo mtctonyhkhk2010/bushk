@@ -13,7 +13,7 @@
             <x-stop-tabs wire:model.live="selected_stop" class="h-[calc(100%-2.5rem)] overflow-y-scroll">
                 @foreach($stops as $stop)
                     <x-search-tab name="{{ $stop->id }}" label="{{ $stop->name_tc }}" class="divide-y divide-slate-400/25">
-                        @foreach($stop->routes->sortBy('name')->sortBy('service_type') as $route)
+                        @foreach($stop->routes as $route)
                             <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
                                  class="flex items-center justify-start gap-4 p-3 cursor-pointer"
                                  x-data="{
