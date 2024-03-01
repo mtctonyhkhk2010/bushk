@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Route;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Livewire\Attributes\Session;
 use Livewire\Attributes\Title;
 use Livewire\Component;

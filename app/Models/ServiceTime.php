@@ -15,5 +15,7 @@ class ServiceTime extends Model
         'start',
         'end',
         'frequency_min',
+        'weekday_tc',
+        'weekday_en',
     ];
 }

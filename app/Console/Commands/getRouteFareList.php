@@ -97,26 +97,73 @@ class getRouteFareList extends Command
             ]);
         }
 
-        $service_time_map = [
-            "31" => "星期一至五",
-            "287" => "星期一至五",
-            "415" => "星期一至五",
-            "63" => "星期一至六",
-            "319" => "星期一至六",
-            "447" => "星期一至六",
-            "416" => "星期六至日",
-            "480" => "星期六至日",
-            "266" => "星期二至四",
-            "271" => "星期一至四",
-            "272" => "星期五",
-            "288" => "星期六",
-            "320" => "星期日及公眾假期",
-            "448" => "星期日及公眾假期",
-            "511" => "所有日子",
-            "111" => "除星期三外",
+        $service_time_map_tc = [
+            31 => "星期一至五",
+            287 => "星期一至五",
+            415 => "星期一至五",
+            63 => "星期一至六",
+            319 => "星期一至六",
+            447 => "星期一至六",
+            416 => "星期六至日",
+            480 => "星期六至日",
+            266 => "星期二至四",
+            271 => "星期一至四",
+            272 => "星期五",
+            288 => "星期六",
+            96 => "星期六、日及公眾假期",
+            320 => "星期日及公眾假期",
+            448 => "星期日及公眾假期",
+            127 => "所有日子",
+            511 => "所有日子",
+            111 => "除星期三外",
+            1 => "星期一",
+            2 => "星期二",
+            4 => "星期三",
+            8 => "星期四",
+            16 => "星期五",
+            32 => "星期六",
+            64 => "星期日",
+            257 => "星期一",
+            258 => "星期二",
+            260 => "星期三",
+            264 => "星期四",
+            999 => "未知日子",
         ];
 
-        foreach ($routes['routeList'] as $route)
+        $service_time_map_en = [
+            31 => "Monday to Friday",
+            287 => "Monday to Friday",
+            415 => "Monday to Friday",
+            63 => "Monday to Saturday",
+            319 => "Monday to Saturday",
+            447 => "Monday to Saturday",
+            416 => "Saturday to Sunday",
+            480 => "Saturday to Sunday",
+            266 => "Tuesday to Thursday",
+            271 => "Monday to Thursday",
+            272 => "Friday",
+            288 => "Saturday",
+            96 => "Saturday, Sunday and PHs",
+            320 => "Sundays and PHs",
+            448 => "Sundays and PHs",
+            127 => "All days",
+            511 => "All days",
+            111 => "Except Wednesday",
+            1 => "Monday",
+            2 => "Tuesday",
+            4 => "Wednesday",
+            8 => "Thursday",
+            16 => "Friday",
+            32 => "Saturday",
+            64 => "Sunday",
+            257 => "Monday",
+            258 => "Tuesday",
+            260 => "Wednesday",
+            264 => "Thursday",
+            999 => "Unknown day",
+        ];
+
+        foreach ($routes['routeList'] as $route_key => $route)
         {
             $new_route = Route::create([
                 'name' => $route['route'],
@@ -153,21 +200,24 @@ class getRouteFareList extends Command
                 }
             }
 
-//            foreach ($route['freq'] as $weekday_id => $periods)
-//            {
-//                foreach ($periods as $start => $period)
-//                {
-//                    $new_route->serviceTimes()->create([
-//                        'weekday_id' => $weekday_id,
-//                        'weekday' => $service_time_map[$weekday_id],
-//                        'start' => $start,
-//                        'end' => $period[0] ?? null,
-//                        'frequency_min' => $period[1] ?? null,
-//                    ]);
-//                }
-//            }
+            if (!isset($route['freq'])) echo $route_key . ' does not has service time data.' . PHP_EOL;
+
+            foreach ($route['freq'] ?? [] as $weekday_id => $periods)
+            {
+                foreach ($periods as $start => $period)
+                {
+                    $new_route->serviceTimes()->create([
+                        'weekday_id' => $weekday_id,
+                        'weekday_tc' => $service_time_map_tc[$weekday_id],
+                        'weekday_en' => $service_time_map_en[$weekday_id],
+                        'start' => $start,
+                        'end' => $period[0] ?? null,
+                        'frequency_min' => isset($period[1]) ? intval($period[1]) / 60 : null,
+                    ]);
+                }
+            }
         }
-        Cache::flush();
+//        Cache::flush();
 
         echo now()->toDateTimeString();
     }

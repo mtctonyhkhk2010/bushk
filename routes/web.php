@@ -3,7 +3,7 @@
 use App\Livewire\Search;
 use App\Livewire\ShowInterchange;
 use App\Livewire\ShowRoute;
-use App\Livewire\Welcome;
+use App\Livewire\ShowServiceTime;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +21,7 @@ Route::get('/', function () {
 });
 Route::get('/search', Search::class);
 Route::get('/route/{route}/{name?}', ShowRoute::class);
+Route::get('/service-time/{route}/{name?}', ShowServiceTime::class);
 Route::get('/interchange/{route}/{stop?}', ShowInterchange::class);
 Route::get('/favorite-routes', \App\Livewire\FavoriteRoutes::class);
 Route::get('/favorite-stops', \App\Livewire\FavoriteStops::class);
