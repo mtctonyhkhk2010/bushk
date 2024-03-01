@@ -2,7 +2,7 @@
     <x-layouts.navbar :title="empty($search) ? '搜尋' : $search">
 
     </x-layouts.navbar>
-    <div class="h-[calc(100svh-112px)]">
+    <div class="h-[calc(100svh-112px-env(safe-area-inset-bottom))]">
         <x-search-tabs wire:model.live="selected_tab" class="h-[calc(100%-2.5rem)] overflow-y-scroll">
             <x-search-tab name="bus" label="巴士" class="divide-y divide-slate-400/25">
                 @foreach($routes as $route)

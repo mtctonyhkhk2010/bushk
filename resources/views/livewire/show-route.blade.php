@@ -17,7 +17,7 @@
             <livewire:toggle-favorite-route :route_id="$route->id"/>
         </x-slot:end>
     </x-layouts.navbar>
-    <div class="h-[calc(100svh-112px)]">
+    <div class="h-[calc(100svh-112px-env(safe-area-inset-bottom))]">
         <div id="map" class="h-2/5" x-data="map"></div>
         <div class="h-3/5 overflow-y-scroll" x-data="stop_list">
             @foreach($stops[$this->route->companies->first()->id] as $stop)

@@ -12,7 +12,7 @@
             <span wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}">{{ $route->name }} {{ $route->dest_tc }}</span> 轉乘優惠
         </x-slot:title>
     </x-layouts.navbar>
-    <div class="h-[calc(100svh-112px)] overflow-y-scroll">
+    <div class="h-[calc(100svh-112px-env(safe-area-inset-bottom))] overflow-y-scroll">
         @if($interchanges->isEmpty())
             此路線未有轉乘優惠
         @endif

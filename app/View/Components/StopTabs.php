@@ -29,7 +29,7 @@ class StopTabs extends Tabs
                                      });
                                  }
                         }"
-                        class="relative h-[calc(100svh-112px)]"}}
+                        class="relative h-[calc(100svh-112px-env(safe-area-inset-bottom))]"}}
                     >
                         <!-- TAB LABELS -->
                         <div class="border-b-2 border-b-base-200 flex overflow-x-auto">

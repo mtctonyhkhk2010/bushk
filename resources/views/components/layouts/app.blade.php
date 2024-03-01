@@ -38,7 +38,7 @@
 <div class="h-full">
     {{ $slot }}
 
-    <div class="btm-nav bg-[#7dcfeb] dark:bg-base-200 h-[56px]">
+    <div class="btm-nav bg-[#7dcfeb] dark:bg-base-200 h-[calc(56px+env(safe-area-inset-bottom))]">
         <button class="{{ request()->is('search*') ? 'active' : ''}}" href="/search" wire:navigate>
             <x-heroicon-o-magnifying-glass class="h-5 w-5"/>
             <span class="btm-nav-label">搜尋</span>
