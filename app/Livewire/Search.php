@@ -66,6 +66,7 @@ class Search extends Component
         $query->when($this->selected_tab == 'mtr', function (Builder $query) {
             $query->join('company_route', 'routes.id', '=', 'company_route.route_id')
                 ->join('companies', 'companies.id', '=', 'company_route.company_id')
+                ->join('mtr_info', 'mtr_info.line_id', '=', 'routes.name')
                 ->whereIn('companies.co', ['mtr']);
         });
 
@@ -75,7 +76,7 @@ class Search extends Component
 
         $character_query = $query->clone();
 
-        $possible_characters =  Cache::remember('1possible_characters_' . $this->selected_tab . '_' . $this->search, 60*60*12, function () use ($character_query) {
+        $possible_characters =  Cache::remember('3possible_characters_' . $this->selected_tab . '_' . $this->search, 60*60*12, function () use ($character_query) {
             return $character_query->selectRaw('SUBSTRING(name , ?, 1) AS possible', [strlen($this->search) + 1])->distinct()->get()->pluck('possible');
         });
         $possible_number = [];
@@ -90,7 +91,7 @@ class Search extends Component
 
         sort($possible_alphabet);
 
-        $routes = Cache::remember('1search_' . $this->selected_tab . '_' . $this->search, 60*60*12, function () use ($query) {
+        $routes = Cache::remember('3search_' . $this->selected_tab . '_' . $this->search, 60*60*12, function () use ($query) {
             return $query->with('companies')
                 ->orderByRaw('LENGTH(name)')
                 ->orderBy('name')
@@ -99,6 +100,9 @@ class Search extends Component
                 ->orderBy('service_type')
                 ->limit(50)
                 ->select('routes.*')
+                ->when($this->selected_tab == 'mtr', function (Builder $query) {
+                    $query->addSelect(['mtr_info.line_name_tc', 'mtr_info.line_name_en', 'mtr_info.line_color']);
+                })
                 ->get();
         });
 

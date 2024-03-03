@@ -7,7 +7,7 @@
             @foreach($tabs as $tab)
                 <x-search-tab name="{{ $tab['name'] }}" label="{{ $tab['label'] }}" class="divide-y divide-slate-400/25">
                     @foreach($routes as $route)
-                        <x-route-search-item :route="$route"/>
+                        <x-route-search-item :route="$route" :tab="$tab['name']"/>
                     @endforeach
                 </x-search-tab>
             @endforeach
