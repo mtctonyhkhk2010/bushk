@@ -28,4 +28,5 @@
             </div>
         </div>
     </div>
+    <x-offline/>
 </div>

@@ -28,6 +28,7 @@
             @endforeach
         </div>
     </div>
+    <x-offline/>
 </div>
 
 @assets
