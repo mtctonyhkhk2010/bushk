@@ -229,7 +229,7 @@
 
                 const company = this.companies[key];
 
-                if(this.stops[company.id][sequence]['stop_code'] === undefined) continue;
+                if(this.stops[company.id][sequence] === undefined) continue;
 
                 const fetchEta = window.fetchEta(company.co, this.stops[company.id][sequence]['stop_code'], this.route_name,
                     this.service_type, this.gtfs_id, company.pivot.bound, @js($route->nlb_id), @js($route->dest_tc),
