@@ -16,9 +16,7 @@ use App\Livewire\ShowServiceTime;
 |
 */
 
-Route::get('/', function () {
-    return redirect('/search');
-});
+Route::get('/', Search::class);
 Route::get('/search', Search::class);
 Route::get('/route/{route}/{name?}', ShowRoute::class);
 Route::get('/service-time/{route}/{name?}', ShowServiceTime::class);
