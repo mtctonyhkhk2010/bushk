@@ -76,7 +76,7 @@ class Search extends Component
 
         $character_query = $query->clone();
 
-        $possible_characters =  Cache::remember('3possible_characters_' . $this->selected_tab . '_' . $this->search, 60*60*12, function () use ($character_query) {
+        $possible_characters =  Cache::remember('6possible_characters_' . $this->selected_tab . '_' . $this->search, 60*60*12, function () use ($character_query) {
             return $character_query->selectRaw('SUBSTRING(name , ?, 1) AS possible', [strlen($this->search) + 1])->distinct()->get()->pluck('possible');
         });
         $possible_number = [];
@@ -91,7 +91,7 @@ class Search extends Component
 
         sort($possible_alphabet);
 
-        $routes = Cache::remember('3search_' . $this->selected_tab . '_' . $this->search, 60*60*12, function () use ($query) {
+        $routes = Cache::remember('6search_' . $this->selected_tab . '_' . $this->search, 60*60*12, function () use ($query) {
             return $query->with('companies')
                 ->orderByRaw('LENGTH(name)')
                 ->orderBy('name')
