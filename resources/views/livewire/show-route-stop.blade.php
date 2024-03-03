@@ -36,7 +36,7 @@
                     <span x-show="remainingTimeInMinutes(eta.eta) == 0">
                                     即將到達
                                 </span>)
-                    <span x-show="Object.keys(companies).length > 1" x-text="'- ' + eta.co"></span> <span x-show="eta.remark.length > 1" x-text="'- ' + eta.remark"></span>
+                    <span x-show="Object.keys(companies).length > 1" x-text="'- ' + eta.co"></span> <span x-show="eta.remark !== null && eta.remark.length > 1" x-text="'- ' + eta.remark"></span>
                 </div>
             </template>
         </div>

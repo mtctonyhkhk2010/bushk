@@ -4,16 +4,13 @@
     </x-layouts.navbar>
     <div class="h-[calc(100svh-112px-env(safe-area-inset-bottom))]">
         <x-search-tabs wire:model.live="selected_tab" class="h-[calc(100%-2.5rem)] overflow-y-scroll">
-            <x-search-tab name="bus" label="巴士" class="divide-y divide-slate-400/25">
-                @foreach($routes as $route)
-                    <x-route-search-item :route="$route"/>
-                @endforeach
-            </x-search-tab>
-            <x-search-tab name="minibus" label="小巴" class="divide-y divide-slate-400/25">
-                @foreach($routes as $route)
-                    <x-route-search-item :route="$route"/>
-                @endforeach
-            </x-search-tab>
+            @foreach($tabs as $tab)
+                <x-search-tab name="{{ $tab['name'] }}" label="{{ $tab['label'] }}" class="divide-y divide-slate-400/25">
+                    @foreach($routes as $route)
+                        <x-route-search-item :route="$route"/>
+                    @endforeach
+                </x-search-tab>
+            @endforeach
         </x-search-tabs>
         <div class="flex flex-row gap-2 items-start h-2/5 max-h-60">
             <div class="basis-3/5 grid grid-cols-3 gap-2 max-h-60">

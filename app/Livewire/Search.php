@@ -19,9 +19,30 @@ class Search extends Component
     #[Url(as: 's'), Session]
     public $search = '';
 
+    private $tabs = [
+        [
+            'name' => 'bus',
+            'label' => '巴士',
+        ],
+        [
+            'name' => 'gmb',
+            'label' => '綠van',
+        ],
+        [
+            'name' => 'lightrail',
+            'label' => '輕鐵',
+        ],
+        [
+            'name' => 'mtr',
+            'label' => '港鐵',
+        ],
+    ];
+
     #[Title('Search')]
     public function render()
     {
+        $tabs = $this->tabs;
+
         $query = Route::query();
 
         $query->when($this->selected_tab == 'bus', function (Builder $query) {
@@ -30,10 +51,22 @@ class Search extends Component
                 ->whereIn('companies.co', ['kmb', 'ctb', 'nlb', 'lrtfeeder']);
         });
 
-        $query->when($this->selected_tab == 'minibus', function (Builder $query) {
+        $query->when($this->selected_tab == 'gmb', function (Builder $query) {
             $query->join('company_route', 'routes.id', '=', 'company_route.route_id')
                 ->join('companies', 'companies.id', '=', 'company_route.company_id')
                 ->whereIn('companies.co', ['gmb']);
+        });
+
+        $query->when($this->selected_tab == 'lightrail', function (Builder $query) {
+            $query->join('company_route', 'routes.id', '=', 'company_route.route_id')
+                ->join('companies', 'companies.id', '=', 'company_route.company_id')
+                ->whereIn('companies.co', ['lightRail']);
+        });
+
+        $query->when($this->selected_tab == 'mtr', function (Builder $query) {
+            $query->join('company_route', 'routes.id', '=', 'company_route.route_id')
+                ->join('companies', 'companies.id', '=', 'company_route.company_id')
+                ->whereIn('companies.co', ['mtr']);
         });
 
         $query->when(!empty($this->search), function (Builder $query) {
@@ -42,7 +75,7 @@ class Search extends Component
 
         $character_query = $query->clone();
 
-        $possible_characters =  Cache::rememberForever('possible_characters_' . $this->selected_tab . '_' . $this->search, function () use ($character_query) {
+        $possible_characters =  Cache::remember('1possible_characters_' . $this->selected_tab . '_' . $this->search, 60*60*12, function () use ($character_query) {
             return $character_query->selectRaw('SUBSTRING(name , ?, 1) AS possible', [strlen($this->search) + 1])->distinct()->get()->pluck('possible');
         });
         $possible_number = [];
@@ -57,7 +90,7 @@ class Search extends Component
 
         sort($possible_alphabet);
 
-        $routes = Cache::rememberForever('search_' . $this->selected_tab . '_' . $this->search, function () use ($query) {
+        $routes = Cache::remember('1search_' . $this->selected_tab . '_' . $this->search, 60*60*12, function () use ($query) {
             return $query->with('companies')
                 ->orderByRaw('LENGTH(name)')
                 ->orderBy('name')
@@ -69,7 +102,7 @@ class Search extends Component
                 ->get();
         });
 
-        return view('livewire.search', compact('routes', 'possible_number', 'possible_alphabet'));
+        return view('livewire.search', compact('routes', 'possible_number', 'possible_alphabet', 'tabs'));
     }
 
     public function addToSearch($character)

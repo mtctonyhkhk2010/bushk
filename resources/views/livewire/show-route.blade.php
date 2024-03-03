@@ -149,6 +149,7 @@
 
         goToPosition(event) {
             const sequence = event.detail;
+            if(this.stops_position[sequence] === undefined) return;
             this.map.panTo(new L.LatLng(this.stops_position[sequence].latitude, this.stops_position[sequence].longitude));
         }
     }));
@@ -228,7 +229,8 @@
                 const company = this.companies[key];
 
                 const fetchEta = window.fetchEta(company.co, this.stops[company.id][sequence]['stop_code'], this.route_name,
-                    this.service_type, this.gtfs_id, company.pivot.bound, @js($route->nlb_id));
+                    this.service_type, this.gtfs_id, company.pivot.bound, @js($route->nlb_id), @js($route->dest_tc),
+                    sequence, this.stops[company.id][0]['stop_code'] === this.stops[company.id][this.stops[company.id].length - 1]['stop_code']);
 
                 fetchEta.then((temp_etas) => {
                     this.loading = false;
