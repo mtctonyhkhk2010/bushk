@@ -13,7 +13,8 @@
         "laravel/tinker": "^2.8",
         "livewire/livewire": "^3.3",
         "predis/predis": "^2.2",
-        "robsontenorio/mary": "^1.18"
+        "robsontenorio/mary": "^1.18",
+        "symfony/dom-crawler": "^7.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.9",
