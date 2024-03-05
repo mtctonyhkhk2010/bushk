@@ -16,18 +16,18 @@ class ShowRouteStop extends Component
         return view('livewire.show-route-stop');
     }
 
-    public function addFavoriteStop($stop_id)
+    public function addFavoriteStop($stop_code)
     {
-        session()->push('favorite_stops', $stop_id);
-        session()->put('favorite_stops', array_values(array_unique(session()->get('favorite_stops'))));
+        session()->push('favorite_stops2', $stop_code);
+        session()->put('favorite_stops2', array_values(array_unique(session()->get('favorite_stops2'))));
     }
 
-    public function removeFavoriteStop($stop_id)
+    public function removeFavoriteStop($stop_code)
     {
-        $favorite_stops = session()->get('favorite_stops', []);
-        if (($key = array_search($stop_id, $favorite_stops)) !== false) {
+        $favorite_stops = session()->get('favorite_stops2', []);
+        if (($key = array_search($stop_code, $favorite_stops)) !== false) {
             unset($favorite_stops[$key]);
         }
-        session()->put('favorite_stops', array_values(array_unique($favorite_stops)));
+        session()->put('favorite_stops2', array_values(array_unique($favorite_stops)));
     }
 }

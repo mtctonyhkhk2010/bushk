@@ -12,7 +12,7 @@ class FavoriteStops extends Component
 
     public function mount()
     {
-        $this->stops = Stop::whereIn('id', session()->get('favorite_stops', []))->with(['routes' => function ($query) {
+        $this->stops = Stop::whereIn('stop_code', session()->get('favorite_stops2', []))->with(['routes' => function ($query) {
             $query->orderByRaw('LENGTH(name)')
                 ->orderBy('name')
                 ->orderBy('service_type');
