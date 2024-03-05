@@ -51,9 +51,9 @@
 
             <button class="p-0">
             @if(in_array($stop['stop_code'], session()->get('favorite_stops2') ?? []))
-                <x-heroicon-s-heart class="h-5 w-5 mr-2" wire:click="removeFavoriteStop({{ $stop['stop_code'] }})"/>
+                <x-heroicon-s-heart class="h-5 w-5 mr-2" wire:click="removeFavoriteStop('{{ $stop['stop_code'] }}')"/>
             @else
-                <x-heroicon-o-heart class="h-5 w-5 mr-2" wire:click="addFavoriteStop({{ $stop['stop_code'] }})"/>
+                <x-heroicon-o-heart class="h-5 w-5 mr-2" wire:click="addFavoriteStop('{{ $stop['stop_code'] }}')"/>
             @endif
             </button>
         </div>
