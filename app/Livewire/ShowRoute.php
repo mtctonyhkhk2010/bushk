@@ -16,6 +16,7 @@ class ShowRoute extends Component
     public $stops;
     public $stops_position = [];
     public ?Route $reverse_route;
+    public $is_mtr = false;
 
     public function mount()
     {
@@ -23,6 +24,12 @@ class ShowRoute extends Component
 //            return Http::get('https://www.kmb.hk/storage/BBI_routeF1.js')->collect();
 //        })['A31']);
         //dd($this->route->stops()->with('company')->get()->groupBy('company.id'));
+        if ($this->route->companies()->first()->co == 'mtr')
+        {
+            $this->is_mtr = true;
+            $this->route->load('mtr_info');
+        }
+
         $this->reverse_route = Route::where('name', $this->route->name)
             ->where('service_type', $this->route->service_type)
             ->where('id', '!=', $this->route->id)

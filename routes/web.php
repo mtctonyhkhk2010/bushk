@@ -1,9 +1,10 @@
 <?php
 
+use App\Livewire\Offline;
 use App\Livewire\Search;
 use App\Livewire\ShowInterchange;
 use App\Livewire\ShowRoute;
-use App\Livewire\Welcome;
+use App\Livewire\ShowServiceTime;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,11 +17,11 @@ use App\Livewire\Welcome;
 |
 */
 
-Route::get('/', function () {
-    return redirect('/search');
-});
+Route::get('/', Search::class);
 Route::get('/search', Search::class);
 Route::get('/route/{route}/{name?}', ShowRoute::class);
+Route::get('/service-time/{route}/{name?}', ShowServiceTime::class);
 Route::get('/interchange/{route}/{stop?}', ShowInterchange::class);
 Route::get('/favorite-routes', \App\Livewire\FavoriteRoutes::class);
 Route::get('/favorite-stops', \App\Livewire\FavoriteStops::class);
+Route::get('/offline', Offline::class);

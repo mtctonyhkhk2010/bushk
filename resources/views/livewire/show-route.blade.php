@@ -1,5 +1,5 @@
 <div>
-    <x-layouts.navbar :title="$route->name . ' ' .$route->dest_tc">
+    <x-layouts.navbar>
         <x-slot:start>
             @if(isset($reverse_route))
             <div class="flex divide-x" wire:navigate href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}">
@@ -10,10 +10,20 @@
             </div>
             @endif
         </x-slot:start>
+        <x-slot:title>
+            <span @if($is_mtr) style="border-bottom: 1px solid {{ $route->mtr_info->line_color }}; margin-bottom: -1px;" @endif>
+                <span class="mr-1">{{ $is_mtr ? $route->mtr_info->line_name_tc : $route->name }}</span>
+                <span class="mr-1 text-xs">往</span>
+                <span>{{ $route->dest_tc }}</span>
+            </span>
+        </x-slot:title>
         <x-slot:end>
             <x-heroicon-o-arrows-right-left class="h-5 w-5 mr-3"
                                             wire:navigate
                                             href="/interchange/{{ $route->id }}"/>
+            <x-heroicon-o-clock class="h-5 w-5 mr-3"
+                                            wire:navigate
+                                            href="/service-time/{{ $route->id }}"/>
             <livewire:toggle-favorite-route :route_id="$route->id"/>
         </x-slot:end>
     </x-layouts.navbar>
@@ -25,6 +35,7 @@
             @endforeach
         </div>
     </div>
+    <x-offline/>
 </div>
 
 @assets
@@ -146,6 +157,7 @@
 
         goToPosition(event) {
             const sequence = event.detail;
+            if(this.stops_position[sequence] === undefined) return;
             this.map.panTo(new L.LatLng(this.stops_position[sequence].latitude, this.stops_position[sequence].longitude));
         }
     }));
@@ -224,8 +236,11 @@
 
                 const company = this.companies[key];
 
+                if(this.stops[company.id][sequence] === undefined) continue;
+
                 const fetchEta = window.fetchEta(company.co, this.stops[company.id][sequence]['stop_code'], this.route_name,
-                    this.service_type, this.gtfs_id, company.pivot.bound, @js($route->nlb_id));
+                    this.service_type, this.gtfs_id, company.pivot.bound, @js($route->nlb_id), @js($route->dest_tc),
+                    sequence, this.stops[company.id][0]['stop_code'] === this.stops[company.id][this.stops[company.id].length - 1]['stop_code']);
 
                 fetchEta.then((temp_etas) => {
                     this.loading = false;

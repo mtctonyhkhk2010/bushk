@@ -1,9 +1,11 @@
 {
     "name": "HK Transport",
+    "short_name": "HK TP",
     "display": "standalone",
     "start_url": "/",
     "theme_color": "#191e24",
     "background_color": "#191e24",
+    "orientation": "portrait",
     "icons": [
         {
             "src": "\/android-icon-36x36.png",
@@ -38,6 +40,12 @@
         {
             "src": "\/android-icon-192x192.png",
             "sizes": "192x192",
+            "type": "image\/png",
+            "density": "4.0"
+        },
+        {
+            "src": "\/android-icon-512x512.png",
+            "sizes": "512x512",
             "type": "image\/png",
             "density": "4.0"
         }
