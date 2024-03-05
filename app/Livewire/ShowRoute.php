@@ -18,17 +18,22 @@ class ShowRoute extends Component
     public ?Route $reverse_route;
     public $is_mtr = false;
 
+    public $line_color = '#3388ff';
+
     public function mount()
     {
 //        dd(Cache::remember('bbi_f1', 10000, function () {
 //            return Http::get('https://www.kmb.hk/storage/BBI_routeF1.js')->collect();
 //        })['A31']);
         //dd($this->route->stops()->with('company')->get()->groupBy('company.id'));
-        if ($this->route->companies()->first()->co == 'mtr')
+        $co = $this->route->companies()->first()->co;
+        if ($co == 'mtr')
         {
             $this->is_mtr = true;
             $this->route->load('mtr_info');
         }
+
+        $this->setLineColor($co);
 
         $this->reverse_route = Route::where('name', $this->route->name)
             ->where('service_type', $this->route->service_type)
@@ -58,5 +63,29 @@ class ShowRoute extends Component
     public function render()
     {
         return view('livewire.show-route')->title($this->route->name . ' ' . $this->route->dest_tc);
+    }
+
+    public function setLineColor($co)
+    {
+        if ($co == 'mtr')
+        {
+            $this->line_color = $this->route->mtr_info->line_color;
+        }
+        if ($co == 'kmb')
+        {
+            $this->line_color = '#ed301e';
+        }
+        if ($co == 'ctb')
+        {
+            $this->line_color = '#fcdc00';
+        }
+        if ($co == 'nlb')
+        {
+            $this->line_color = '#00897c';
+        }
+        if ($co == 'gmb')
+        {
+            $this->line_color = '#0e835b';
+        }
     }
 }

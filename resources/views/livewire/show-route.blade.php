@@ -11,7 +11,7 @@
             @endif
         </x-slot:start>
         <x-slot:title>
-            <span @if($is_mtr) style="border-bottom: 1px solid {{ $route->mtr_info->line_color }}; margin-bottom: -1px;" @endif>
+            <span @if($is_mtr) style="border-bottom: 2px solid {{ $route->mtr_info->line_color }}; margin-bottom: -2px;" @endif>
                 <span class="mr-1">{{ $is_mtr ? $route->mtr_info->line_name_tc : $route->name }}</span>
                 <span class="mr-1 text-xs">往</span>
                 <span>{{ $route->dest_tc }}</span>
@@ -76,7 +76,8 @@
         watch_position_id: null,
 
         init() {
-            const stop_icon_colour = '#ce2b5c'
+            const stop_icon_colour = '#ce2b5c';
+            const line_colour = @js($line_color);
 
             const stop_icon = L.divIcon({
                 className: "stop_icon",
@@ -98,7 +99,11 @@
                 });
                 polylinePoints.push([stop.latitude, stop.longitude]);
             });
-            L.polyline(polylinePoints).addTo(this.map);
+            L.polyline(polylinePoints, {
+                color: line_colour,
+                weight: 5,
+                smoothFactor: 1
+            }).addTo(this.map);
 
             //this.getUserLocation()
             this.trackUserPosition();
