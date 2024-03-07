@@ -193,7 +193,7 @@ class getRouteFareList extends Command
                     $new_route->stops()->attach($target_stop->id, [
                         'sequence' => $sequence,
                         'fare' => $route['fares'][$sequence] ?? null,
-                        'fare_holiday' => $route['fare_holiday'][$sequence] ?? null
+                        'fare_holiday' => $route['faresHoliday'][$sequence] ?? null
                     ]);
                     $target_stop->company_id = $company->id;
                     $target_stop->save();
