@@ -15,7 +15,10 @@
     >
         <h6>{{ $stop['pivot']['sequence'] + 1 }}. {{ $stop['name_tc'] }}</h6>
         @if($stop['pivot']['fare'] > 0)
-            <span>${{ $stop['pivot']['fare'] }}</span>
+            <span>@if(isset($stop['pivot']['fare_holiday']) && $stop['pivot']['fare_holiday'] > 0)平日: @endif${{ $stop['pivot']['fare'] }}</span>
+        @endif
+        @if(isset($stop['pivot']['fare_holiday']) && $stop['pivot']['fare_holiday'] > 0)
+            <span>假日: ${{ $stop['pivot']['fare_holiday'] }}</span>
         @endif
         @if($last_stop)
             <span>終點站</span>

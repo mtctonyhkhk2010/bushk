@@ -17,4 +17,12 @@ class RouteStop extends Pivot
             set: fn ($value) => isset($value) ? $value * 10 : null,
         );
     }
+
+    protected function fareHoliday(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => isset($value) ? $value / 10 : null,
+            set: fn ($value) => isset($value) ? $value * 10 : null,
+        );
+    }
 }
