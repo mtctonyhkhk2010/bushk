@@ -32,7 +32,7 @@ class getRouteFareList extends Command
     public function handle()
     {
         echo now()->toDateTimeString();
-        $routes = Cache::remember('users', 1000, function () {
+        $routes = Cache::remember('routeFareList', 1000, function () {
             return Http::get('https://data.hkbus.app/routeFareList.json')->collect();
         });
 
