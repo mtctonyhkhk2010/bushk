@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Route extends Model
 {
-    use HasFactory;
+    use \Spatie\Tags\HasTags;
 
     protected $guarded = [];
 
@@ -41,5 +41,10 @@ class Route extends Model
     public function mtr_info(): HasOne
     {
         return $this->hasOne(MtrInfo::class, 'line_id', 'name');
+    }
+
+    public function paths(): HasMany
+    {
+        return $this->hasMany(Path::class);
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Stop;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -38,17 +40,16 @@ class getRedMiniBusData extends Command
             foreach ($frontpage_crawler->filter('li a') as $domElement) {
                 $area_link = $domElement->getAttribute('href');
                 if (!str_contains($area_link, 'rmb')) continue;
-                $area_content = Cache::remember('16seat_link'.$area_link, 100000, function () use ($area_link) {
-                    return Http::get('https://www.16seats.net/chi/'.$area_link)->body();
+                $area_content = Cache::remember('16seat_link' . $area_link, 100000, function () use ($area_link) {
+                    return Http::get('https://www.16seats.net/chi/' . $area_link)->body();
                 });
 
                 $area_crawler = (new Crawler($area_content))->filter('#SvcList a');
-                foreach ($area_crawler as $area)
-                {
+                foreach ($area_crawler as $area) {
                     $route_link = $area->getAttribute('href');
                     //dd($route_link);
-                    $route_content = Cache::remember('16seat_route_'.$route_link, 100000, function () use ($route_link) {
-                        return Http::get('https://www.16seats.net/chi/rmb/'.$route_link)->body();
+                    $route_content = Cache::remember('16seat_route_' . $route_link, 100000, function () use ($route_link) {
+                        return Http::get('https://www.16seats.net/chi/rmb/' . $route_link)->body();
                     });
 
 
@@ -56,9 +57,7 @@ class getRedMiniBusData extends Command
                     try {
                         //dd($route_crawler->filter('.svcname-rmb-entry')->count());
                         $route_name = $route_crawler->filter('.svcname-rmb-entry')->innerText();
-                    }
-                    catch(\Exception $e)
-                    {
+                    } catch (\Exception $e) {
                         continue;
                     }
                     $route_crawler->filter('.svcname-rmb-entry')->each(function (Crawler $variation_crawler, $variation_index) use ($route_name, $route_crawler) {
@@ -68,12 +67,10 @@ class getRedMiniBusData extends Command
 
                         $tags = $route_crawler->filter('.svc-entry-tag')->getNode($variation_index)->childNodes;
 
-                        foreach ($tags as $tag)
-                        {
+                        foreach ($tags as $tag) {
                             //dd($tag->nodeValue);
                             if (get_class($tag) == 'DOMText') continue;
-                            if ($tag->getAttribute('class') == 'tag-rsvn')
-                            {
+                            if ($tag->getAttribute('class') == 'tag-rsvn') {
                                 $this->rmb_routes[$route_name][$route_variation]['rsvn'] = $tag->nodeValue;
                                 continue;
                             }
@@ -90,9 +87,7 @@ class getRedMiniBusData extends Command
                                     $weekday = $time_row_crawler->children('.time-table-cell1')->innerText();
                                     $time = $time_row_crawler->children('.time-table-cell2')->innerText();
                                     $this->rmb_routes[$route_name][$route_variation]['direction'][$origin]['time'][$weekday] = $time;
-                                }
-                                catch(\Exception $e)
-                                {
+                                } catch (\Exception $e) {
                                     $time = $time_row_crawler->children('.time-table-cell2')->innerText();
                                     $this->rmb_routes[$route_name][$route_variation]['direction'][$origin]['time'][] = $time;
                                 }
@@ -109,9 +104,7 @@ class getRedMiniBusData extends Command
                             try {
                                 $map = $direction_crawler->filter('.svc-detail-frame iframe')->attr('src');
                                 $this->rmb_routes[$route_name][$route_variation]['direction'][$origin]['map'] = substr($map, strpos($map, 'mid=') + strlen('mid='));
-                            }
-                            catch(\Exception $e)
-                            {
+                            } catch (\Exception $e) {
 
                             }
 
@@ -128,15 +121,72 @@ class getRedMiniBusData extends Command
         });
 
 
-        foreach ($rmb_routes as $route)
-        {
-            foreach ($route as $variation)
-            {
-                foreach ($variation['direction'] as $direction)
-                {
+        dd($rmb_routes);
+
+        foreach ($rmb_routes as $route) {
+            foreach ($route as $variation_name => $variation) {
+                $service_type = 1;
+                $special_name = '';
+                $tags = [];
+                if (isset($variation['tags'])) {
+                    if (in_array('循環線', $variation['tags'])) {
+                        $special_name .= '(循環線)';
+                    }
+                    if (in_array('夜間服務', $variation['tags'])) {
+                        $service_type = 2;
+                    }
+                    if (in_array('晨早線', $variation['tags'])) {
+                        $service_type = 2;
+                    }
+                    if (in_array('通宵線', $variation['tags'])) {
+                        $service_type = 2;
+                    }
+                    if (in_array('黃昏線', $variation['tags'])) {
+                        $service_type = 2;
+                    }
+                    foreach ($variation['tags'] as $tag) {
+                        $tags[] = $tag;
+                    }
+                }
+//                $new_route = Route::create([
+//                    'name' => $variation_name.$special_name,
+//                    'service_type' => $service_type,
+//                    'gtfs_id' => null,
+//                    'nlb_id' => null,
+//                    'journey_time' => null,
+//                    'orig_tc' => explode('-', $variation_name)[0],
+//                    'orig_en' => explode('-', $variation_name)[0],
+//                    'dest_tc' => explode('-', $variation_name)[1],
+//                    'dest_en' => explode('-', $variation_name)[1],
+//                ]);
+//
+//                if (!empty($tags)) $new_route->syncTags($tags);
+
+
+                foreach ($variation['direction'] as $direction) {
                     $map = Http::get("https://www.google.com/maps/d/u/0/kml?mid={$direction['map']}&forcekml=1")->body();
                     $map_data = simplexml_load_string($map);
-                    dd($map_data);
+//                    dd($map_data->Document->Folder);
+                    $sequence = 0;
+                    foreach ($map_data->Document->Folder as $folder) {
+                        foreach ($folder->Placemark as $placemark) {
+                            if (isset($placemark->Point)) {
+                                $position = explode(',', trim($placemark->Point->coordinates));
+                                $target_stop = Stop::create([
+                                    'stop_code' => 'rmb_stop',
+                                    'name_tc'   => $placemark->name,
+                                    'name_en'   => $placemark->name,
+                                    'position'  => DB::raw('POINT(' . $position[0] . ', ' . $position[1] . ')'),
+                                ]);
+                                $new_route->stops()->attach($target_stop->id, [
+                                    'sequence'     => $sequence,
+                                    'fare'         => $route['fares'][$sequence] ?? null,
+                                    'fare_holiday' => $route['faresHoliday'][$sequence] ?? null
+                                ]);
+                                $sequence++;
+                            }
+                        }
+                    }
                 }
             }
         }
