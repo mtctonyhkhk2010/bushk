@@ -8,6 +8,9 @@
                 </div>
             </div>
         </x-slot:start>
+        <x-slot:end>
+            <livewire:toggle-favorite-stop :stop_code="$stop['stop_code']"/>
+        </x-slot:end>
     </x-layouts.navbar>
     <div class="h-[calc(100svh-112px-env(safe-area-inset-bottom))] divide-y divide-slate-400/25">
         @foreach($stop->routes as $route)
