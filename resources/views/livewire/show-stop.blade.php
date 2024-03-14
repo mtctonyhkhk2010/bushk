@@ -10,7 +10,7 @@
         </x-slot:start>
         <x-slot:end>
             <a target="_blank" href="https://www.google.com/maps/dir/?api=1&destination={{ $stop->latitude }},{{ $stop->longitude }}&travelmode=walking">
-                <x-heroicon-o-map-pin class="h-5 w-full mr-3"/>
+                <x-heroicon-o-map-pin class="h-5 w-5 mr-3"/>
             </a>
             <livewire:toggle-favorite-stop :stop_code="$stop['stop_code']"/>
         </x-slot:end>
