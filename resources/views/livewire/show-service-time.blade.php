@@ -20,7 +20,7 @@
             @foreach($service_times as $service_time)
                 <div class="font-bold mt-3">{{ $service_time[0]['weekday_tc'] }}</div>
                 @foreach($service_time as $time_period)
-                    <div>{{ $time_period['start'] }} - {{ $time_period['end'] }} {{ $time_period['frequency_min'] }} 分鐘</div>
+                    <div>{{ $time_period['start'] }}@isset($time_period['end']) - {{ $time_period['end'] }}@endif@isset($time_period['frequency_min']) {{ $time_period['frequency_min'] }} 分鐘@endif</div>
                 @endforeach
             @endforeach
         @endif
