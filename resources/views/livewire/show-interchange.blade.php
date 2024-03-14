@@ -1,7 +1,7 @@
 <div>
     <x-layouts.navbar>
         <x-slot:start>
-            <div class="flex divide-x" wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}">
+            <div class="flex divide-x cursor-pointer" wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}">
                 <div class="flex flex-col justify-items-center">
                     <x-heroicon-o-arrow-left class="h-5 w-full"/>
                     <div>返回</div>

@@ -2,7 +2,7 @@
     <x-layouts.navbar>
         <x-slot:start>
             @if(isset($reverse_route))
-            <div class="flex divide-x" wire:navigate href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}">
+            <div class="flex divide-x cursor-pointer" wire:navigate href="/route/{{ $reverse_route->id }}/{{ $reverse_route->name }}">
                 <div class="flex flex-col justify-items-center max-w-14">
                     <x-heroicon-o-arrow-uturn-down class="h-5 w-full"/>
                     <div class="w-full text-center">對頭線</div>
@@ -18,10 +18,10 @@
             </span>
         </x-slot:title>
         <x-slot:end>
-            <x-heroicon-o-arrows-right-left class="h-5 w-5 mr-3"
+            <x-heroicon-o-arrows-right-left class="h-5 w-5 mr-3 cursor-pointer"
                                             wire:navigate
                                             href="/interchange/{{ $route->id }}"/>
-            <x-heroicon-o-clock class="h-5 w-5 mr-3"
+            <x-heroicon-o-clock class="h-5 w-5 mr-3 cursor-pointer"
                                             wire:navigate
                                             href="/service-time/{{ $route->id }}"/>
             <livewire:toggle-favorite-route :route_id="$route->id"/>

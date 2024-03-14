@@ -1,7 +1,7 @@
 <div>
     @if($favorite)
-        <x-heroicon-s-heart class="h-5 w-5 mr-2" wire:click="removeFavoriteRoute"/>
+        <x-heroicon-s-heart class="h-5 w-5 mr-2 cursor-pointer" wire:click="removeFavoriteRoute"/>
     @else
-        <x-heroicon-o-heart class="h-5 w-5 mr-2" wire:click="addFavoriteRoute"/>
+        <x-heroicon-o-heart class="h-5 w-5 mr-2 cursor-pointer" wire:click="addFavoriteRoute"/>
     @endif
 </div>

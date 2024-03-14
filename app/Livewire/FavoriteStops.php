@@ -14,9 +14,9 @@ class FavoriteStops extends Component
     {
         $this->stops = Stop::whereIn('stop_code', session()->get('favorite_stops2', []))->with(['routes' => function ($query) {
             $query->orderByRaw('LENGTH(name)')
-                ->orderBy('name')
-                ->orderBy('service_type');
-        }])->get();
+                ->orderBy('routes.name')
+                ->orderBy('routes.service_type');
+        }, 'routes.companies'])->get();
         $this->selected_stop = "".$this->stops->first()?->id;
     }
 

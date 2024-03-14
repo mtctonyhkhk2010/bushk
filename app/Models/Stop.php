@@ -88,6 +88,9 @@ class Stop extends Model
     public function routes(): BelongsToMany
     {
         return $this->belongsToMany(Route::class)
-            ->using(RouteStop::class);
+            ->using(RouteStop::class)
+            ->orderByRaw('LENGTH(name)')
+            ->orderBy('name')
+            ->orderBy('service_type');
     }
 }
