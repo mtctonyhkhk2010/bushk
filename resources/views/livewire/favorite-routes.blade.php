@@ -11,76 +11,7 @@
         @foreach($routes as $route)
             <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
                  class="flex items-center justify-start gap-4 p-3 cursor-pointer"
-                 x-data="{
-        init() {
-            this.getNearestStop();
-            document.addEventListener('position-updated', (e) => {
-                this.getNearestStop();
-            });
-            document.addEventListener('livewire:navigating', () => {
-                document.removeEventListener('position-updated', (e) => {
-                    this.getNearestStop();
-                });
-            });
-            this.$watch('etas', () => {
-                this.etas = this.etas.sort((a, b) => {
-                    return a.timestamp - b.timestamp;
-                })
-            });
-        },
-        getNearestStop() {
-            if(window.coords === undefined) return;
-            let stop_distance = [];
-
-            this.stops[this.first_company_id].forEach((stop) => {
-                stop_distance.push(window.distance(stop.latitude, stop.longitude, window.coords.latitude, window.coords.longitude));
-            });
-
-            this.nearest_stop_index = stop_distance.indexOf(Math.min(...stop_distance));
-
-            if(this.last_update === null || Date.now() - this.last_update > 30*1000) this.getETA();
-        },
-        getETA() {
-            this.etas = [];
-            for (let key in this.companies) {
-                if (!this.companies.hasOwnProperty(key)) continue;
-
-                const company = this.companies[key];
-
-                const fetchEta = window.fetchEta(company.co, this.stops[company.id][this.nearest_stop_index]['stop_code'], @js($route->name), @js($route->service_type), @js($route->gtfs_id), company.pivot.bound, @js($route->nlb_id));
-
-                fetchEta.then((temp_etas) => {
-                    temp_etas.forEach((eta) => {
-                        this.etas.push(eta);
-                    });
-                });
-            }
-            this.last_update = Date.now();
-        },
-        formatTime(time) {
-            const date = new Date(time);
-            return this.padTo2Digits(date.getHours()) + ':' + this.padTo2Digits(date.getMinutes());
-        },
-        padTo2Digits(num) {
-            return String(num).padStart(2, '0');
-        },
-        remainingTimeInMinutes(time) {
-            const date = new Date(time);
-            const now = new Date();
-            const diffMs = (date - now); // milliseconds between now & Christmas
-            const diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
-            if (diffMins <= 0) return 0;
-            return diffMins;
-        },
-
-        nearest_stop_index: null,
-        last_update: null,
-        etas: [],
-        companies: @js($route->companies->keyBy('id')),
-        first_company_id: @js(array_key_first($stops[$route->id])),
-stops: @js($stops[$route->id])
-
-}"
+                 x-data="favorite_route(@js($stops[$route->id]), @js($route), @js($route->companies->keyBy('id')), @js(array_key_first($stops[$route->id])))"
             >
                 <div>
                     <h4 class="min-w-20 font-bold text-lg">
@@ -119,3 +50,77 @@ stops: @js($stops[$route->id])
         @endforeach
     </div>
 </div>
+
+@script
+<script>
+    Alpine.data('favorite_route', (stops, route, companies, first_company_id) => ({
+        nearest_stop_index: null,
+        last_update: null,
+        etas: [],
+        companies: companies,
+        first_company_id: first_company_id,
+        stops: stops,
+        route: route,
+        init() {
+            this.getNearestStop();
+            document.addEventListener('position-updated', (e) => {
+                this.getNearestStop();
+            });
+            document.addEventListener('livewire:navigating', () => {
+                document.removeEventListener('position-updated', (e) => {
+                    this.getNearestStop();
+                });
+            });
+            this.$watch('etas', () => {
+                this.etas = this.etas.sort((a, b) => {
+                    return a.timestamp - b.timestamp;
+                })
+            });
+        },
+        getNearestStop() {
+            if(window.coords === undefined) return;
+            let stop_distance = [];
+
+            this.stops[this.first_company_id].forEach((stop) => {
+                stop_distance.push(window.distance(stop.latitude, stop.longitude, window.coords.latitude, window.coords.longitude));
+            });
+
+            this.nearest_stop_index = stop_distance.indexOf(Math.min(...stop_distance));
+
+            if(this.last_update === null || Date.now() - this.last_update > 30*1000) this.getETA();
+        },
+        getETA() {
+            this.etas = [];
+            for (let key in this.companies) {
+                if (!this.companies.hasOwnProperty(key)) continue;
+
+                const company = this.companies[key];
+
+                const fetchEta = window.fetchEta(company.co, this.stops[company.id][this.nearest_stop_index]['stop_code'], this.route.name, this.route.service_type, this.route.gtfs_id, company.pivot.bound, this.route.nlb_id);
+
+                fetchEta.then((temp_etas) => {
+                    temp_etas.forEach((eta) => {
+                        this.etas.push(eta);
+                    });
+                });
+            }
+            this.last_update = Date.now();
+        },
+        formatTime(time) {
+            const date = new Date(time);
+            return this.padTo2Digits(date.getHours()) + ':' + this.padTo2Digits(date.getMinutes());
+        },
+        padTo2Digits(num) {
+            return String(num).padStart(2, '0');
+        },
+        remainingTimeInMinutes(time) {
+            const date = new Date(time);
+            const now = new Date();
+            const diffMs = (date - now); // milliseconds between now & Christmas
+            const diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
+            if (diffMins <= 0) return 0;
+            return diffMins;
+        }
+    }));
+</script>
+@endscript
