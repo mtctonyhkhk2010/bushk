@@ -92,18 +92,12 @@
                 maxZoom: 19,
                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(this.map);
-            let polylinePoints = [];
+
             this.stops_position.forEach((stop, sequence) => {
                 L.marker([stop.latitude, stop.longitude], {icon: stop_icon}).addTo(this.map).on('click', (e) => {
                     this.$dispatch('go-to-stop', sequence);
                 });
-                polylinePoints.push([stop.latitude, stop.longitude]);
             });
-            L.polyline(polylinePoints, {
-                color: line_colour,
-                weight: 5,
-                smoothFactor: 1
-            }).addTo(this.map);
 
             //this.getUserLocation()
             this.trackUserPosition();
@@ -114,6 +108,40 @@
             document.addEventListener("go-to-position", (e) => {
                 this.goToPosition(e);
             });
+
+            this.loadRouteLine();
+        },
+
+        async loadRouteLine() {
+            const line_colour = @js($line_color);
+            let polylinePoints = [];
+
+            const path = `https://hkbus.github.io/route-waypoints/{{ $route->gtfs_id }}-{{ $route->companies->first()->pivot->bound }}.json`;
+            const response = await fetch(path);
+
+            if (!response.ok)
+            {
+                this.stops_position.forEach((stop) => {
+                    polylinePoints.push([stop.latitude, stop.longitude]);
+                });
+            }
+
+            if (response.ok)
+            {
+                const data = await response.json();
+
+                data.features[0].geometry.coordinates.forEach((coordinate_group) => {
+                    coordinate_group.forEach(coordinate => {
+                        polylinePoints.push([coordinate[1],coordinate[0]]);
+                    });
+                });
+            }
+
+            L.polyline(polylinePoints, {
+                color: line_colour,
+                weight: 5,
+                smoothFactor: 1
+            }).addTo(this.map);
         },
 
         trackUserPosition() {
