@@ -116,11 +116,7 @@
             const line_colour = @js($line_color);
             let polylinePoints = [];
 
-            @if($is_mtr)
-                const path = `https://hkbus.github.io/route-waypoints/{{ strtolower($route->mtr_info->line_id) }}.json`;
-            @else
-                const path = `https://hkbus.github.io/route-waypoints/{{ $route->gtfs_id }}-{{ $route->companies->first()->pivot->bound }}.json`;
-            @endif
+            const path = `https://hkbus.github.io/route-waypoints/{{ $is_mtr ? strtolower($route->mtr_info->line_id) : $route->gtfs_id . '-' . $route->companies->first()->pivot->bound }}.json`;
             const response = await fetch(path);
 
             if (!response.ok)
