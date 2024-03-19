@@ -117,7 +117,7 @@
             let polylinePoints = [];
 
             @if($is_mtr)
-                const path = `https://hkbus.github.io/route-waypoints/{{ $route->mtr_info->line_id }}.json`;
+                const path = `https://hkbus.github.io/route-waypoints/{{ strtolower($route->mtr_info->line_id) }}.json`;
             @else
                 const path = `https://hkbus.github.io/route-waypoints/{{ $route->gtfs_id }}-{{ $route->companies->first()->pivot->bound }}.json`;
             @endif
