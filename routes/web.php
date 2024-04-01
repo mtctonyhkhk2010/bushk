@@ -19,6 +19,7 @@ use App\Livewire\ShowServiceTime;
 
 Route::get('/', Search::class);
 Route::get('/search', Search::class);
+Route::get('/plan', \App\Livewire\Plan::class);
 Route::get('/route/{route}/{name?}', ShowRoute::class);
 Route::get('/stop/{stop}', \App\Livewire\ShowStop::class);
 Route::get('/service-time/{route}/{name?}', ShowServiceTime::class);
