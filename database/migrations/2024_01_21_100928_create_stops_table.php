@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('name_tc');
             $table->string('name_en');
 
-            $table->point('position');
+            $table->geometry('position', subtype: 'point');
         });
     }
 

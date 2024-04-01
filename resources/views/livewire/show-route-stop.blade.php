@@ -24,7 +24,7 @@
             <span>終點站</span>
         @endif
     </div>
-    <div class="p-3 bg-slate-100 dark:bg-black flex justify-between items-center" x-show="expanded" x-collapse >
+    <div class="p-3 bg-slate-100 dark:bg-black flex justify-between items-center" x-show="expanded" x-collapse x-cloak>
         <div>
             <div class="loader" x-show="loading && active === sequence"></div>
             <div x-show="!loading && etas.length === 0">
