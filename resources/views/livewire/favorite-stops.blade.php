@@ -81,7 +81,7 @@
 
             document.addEventListener('livewire:navigating', () => {
                 clearInterval(fav_stops_geteta);
-            });
+            }, { once: true });
         },
         getETA() {
 

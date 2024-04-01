@@ -4,9 +4,9 @@
     </x-layouts.navbar>
     <div class="h-[calc(100svh-112px-env(safe-area-inset-bottom))]">
         <x-search-tabs wire:model.live="selected_tab" class="h-[calc(100%-2.5rem)] overflow-y-scroll">
-            @foreach($tabs as $tab)
+            @foreach($this->tabs as $tab)
                 <x-search-tab name="{{ $tab['name'] }}" label="{{ $tab['label'] }}" class="divide-y divide-slate-400/25">
-                    @foreach($routes as $route)
+                    @foreach($this->routes as $route)
                         <x-route-search-item :route="$route" :tab="$tab['name']"/>
                     @endforeach
                 </x-search-tab>

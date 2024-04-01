@@ -65,12 +65,7 @@
             this.getNearestStop();
             document.addEventListener('position-updated', (e) => {
                 this.getNearestStop();
-            });
-            document.addEventListener('livewire:navigating', () => {
-                document.removeEventListener('position-updated', (e) => {
-                    this.getNearestStop();
-                });
-            });
+            }, { once: true });
             this.$watch('etas', () => {
                 this.etas = this.etas.sort((a, b) => {
                     return a.timestamp - b.timestamp;

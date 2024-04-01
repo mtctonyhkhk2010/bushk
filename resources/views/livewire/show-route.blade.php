@@ -103,11 +103,11 @@
             this.trackUserPosition();
             document.addEventListener("position-updated", (e) => {
                 this.trackUserPosition();
-            });
+            }, { once: true });
 
             document.addEventListener("go-to-position", (e) => {
                 this.goToPosition(e);
-            });
+            }, { once: true });
 
             this.loadRouteLine();
         },
@@ -233,15 +233,15 @@
                         this.getETA(this.active);
                     }, 30000);
                 }
-            });
+            }, { once: true });
 
             document.addEventListener('livewire:navigating', () => {
                 if(this.getETAInterval !== null) this.resetGetETA();
-            });
+            }, { once: true });
 
             document.addEventListener('go-to-stop', (e) => {
                 this.goToStop(e);
-            });
+            }, { once: true });
         },
 
         resetGetETA() {
