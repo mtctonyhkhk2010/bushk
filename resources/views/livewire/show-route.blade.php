@@ -233,7 +233,7 @@
                         this.getETA(this.active);
                     }, 30000);
                 }
-            }, { once: true });
+            });
 
             document.addEventListener('livewire:navigating', () => {
                 if(this.getETAInterval !== null) this.resetGetETA();
