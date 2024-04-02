@@ -6,9 +6,13 @@
         <x-search-tabs wire:model.live="selected_tab" class="h-[calc(100%-2.5rem)] overflow-y-scroll">
             @foreach($this->tabs as $tab)
                 <x-search-tab name="{{ $tab['name'] }}" label="{{ $tab['label'] }}" class="divide-y divide-slate-400/25">
-                    @foreach($this->routes as $route)
+                    @forelse($this->routes as $route)
                         <x-route-search-item :route="$route" :tab="$tab['name']"/>
-                    @endforeach
+                    @empty
+                        <div class="h-28 w-full flex justify-center items-center">
+                            <button class="btn btn-neutral block" wire:click="clearSearch()">{{ $tab['label'] }}沒有路線"{{ $search }}", 按此重設</button>
+                        </div>
+                    @endforelse
                 </x-search-tab>
             @endforeach
         </x-search-tabs>
