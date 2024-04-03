@@ -67,7 +67,7 @@ class Plan extends Component
         if (empty($name)) return [];
 
         //cache google result for a day
-        return Cache::remember('1searchLocation_' . $name, 86400, function () use ($name) {
+        return Cache::remember('xsearchLocation_' . $name, 86400, function () use ($name) {
             return Http::withHeaders([
                 'X-Goog-Api-Key'   => config('google.API_KEY'),
                 'X-Goog-FieldMask' => 'places.displayName,places.formattedAddress,places.location'
