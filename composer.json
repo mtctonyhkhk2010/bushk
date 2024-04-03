@@ -13,6 +13,7 @@
         "laravel/tinker": "^2.8",
         "livewire/livewire": "^3.3",
         "matanyadaev/laravel-eloquent-spatial": "^4.2",
+        "opcodesio/log-viewer": "^3.6",
         "predis/predis": "^2.2",
         "robsontenorio/mary": "^1.18",
         "symfony/dom-crawler": "^7.0"
