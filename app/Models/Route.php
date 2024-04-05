@@ -21,6 +21,20 @@ class Route extends Model
             ->using(RouteStop::class);
     }
 
+    public function from_stops(): BelongsToMany
+    {
+        return $this->belongsToMany(Stop::class)
+            ->withPivot(['sequence', 'fare', 'fare_holiday'])
+            ->using(RouteStop::class);
+    }
+
+    public function to_stops(): BelongsToMany
+    {
+        return $this->belongsToMany(Stop::class)
+            ->withPivot(['sequence', 'fare', 'fare_holiday'])
+            ->using(RouteStop::class);
+    }
+
     public function companies(): BelongsToMany
     {
         return $this->belongsToMany(Company::class)->withPivot(['bound']);
