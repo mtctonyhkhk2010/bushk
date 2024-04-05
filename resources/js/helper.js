@@ -33,6 +33,9 @@ window.fetchEta = async (company, stop_code, route_name = null, service_type = n
     }
 
     const response = await fetch(path, fetch_data);
+
+    if (!response.ok) return etas;
+
     const data = await response.json();
 
     if (company === 'kmb' || company === 'ctb') {
@@ -52,6 +55,8 @@ window.fetchEta = async (company, stop_code, route_name = null, service_type = n
         data.data.forEach((item) => {
             if ((bound === "I" && item.route_seq === 1) ||
                 (bound === "O" && item.route_seq === 2)) return;
+
+            if (item.stop_seq !== stop_sequence + 1) return;
 
             item.eta.forEach((eta) => {
                 if (eta.timestamp === "" || eta.timestamp === null) return;
