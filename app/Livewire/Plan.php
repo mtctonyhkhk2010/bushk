@@ -19,12 +19,15 @@ class Plan extends Component
     public $show_from_suggestion = false;
 
     public $show_to_suggestion = false;
+    public $current_location;
     public $from_location;
 
     public $to_location;
 
     public $from_suggestion = [];
     public $to_suggestion = [];
+
+    public $suggested_routes = [];
 
     public function mount()
     {
@@ -96,24 +99,52 @@ class Plan extends Component
 
     public function searchRoute()
     {
-        if (empty($this->from_location) || empty($this->to_location)) return;
+        if (empty($this->to_location)) return;
 
-        $routes = Route::whereHas('stops', function (Builder $query) {
-            $query->whereRaw('ST_Distance_Sphere(position,point(?, ?)) < 300', [$this->from_location['longitude'], $this->from_location['latitude']]);
-        })->whereHas('stops', function (Builder $query) {
-            $query->whereRaw('ST_Distance_Sphere(position,point(?, ?)) < 300', [$this->to_location['longitude'], $this->to_location['latitude']]);
+        if (empty($this->from_location) && empty($this->current_location)) return;
+
+        if (empty($this->from_location))
+        {
+            $this->from_location = $this->current_location;
+        }
+
+        $distance = 500;
+
+        $routes = Route::whereHas('stops', function (Builder $query) use ($distance) {
+            $query->whereRaw('ST_Distance_Sphere(position,point(?, ?)) < '.$distance, [$this->from_location['longitude'], $this->from_location['latitude']]);
+        })->whereHas('stops', function (Builder $query) use ($distance) {
+            $query->whereRaw('ST_Distance_Sphere(position,point(?, ?)) < '.$distance, [$this->to_location['longitude'], $this->to_location['latitude']]);
         })
-        ->with(['from_stops' => function (\Illuminate\Contracts\Database\Eloquent\Builder $query) {
+        ->with(['from_stops' => function (\Illuminate\Contracts\Database\Eloquent\Builder $query) use ($distance) {
             $query->selectRaw('ST_Distance_Sphere(position,point(?, ?)) as from_distance', [$this->from_location['longitude'], $this->from_location['latitude']])
-                ->having('from_distance', '<', '300')
+                ->having('from_distance', '<', $distance)
                 ->orderBy('from_distance');
-        }, 'to_stops' => function (\Illuminate\Contracts\Database\Eloquent\Builder $query) {
+        }, 'to_stops' => function (\Illuminate\Contracts\Database\Eloquent\Builder $query) use ($distance) {
             $query->selectRaw('ST_Distance_Sphere(position,point(?, ?)) as to_distance', [$this->to_location['longitude'], $this->to_location['latitude']])
-                ->having('to_distance', '<', '300')
+                ->having('to_distance', '<', $distance)
                 ->orderBy('to_distance');
         }])
         ->get();
 
-        dump($routes);
+
+        foreach ($routes as $route)
+        {
+            if (str_contains($route->dest_tc, '循環線'))
+            {
+                foreach ($route->to_stops as $key => $to_stop)
+                {
+                    if ($route->from_stops->first()->sequence > $to_stop->sequence) $route->to_stops->forget($key);
+                }
+            }
+        }
+
+        $routes = $routes->filter(function ($route) use ($routes) {
+            return $route->from_stops->first()->sequence < $route->to_stops->first()->sequence;
+        })->sortBy(function ($route) {
+            return $route->from_stops->first()->from_distance + $route->to_stops->first()->to_distance +
+                ($route->to_stops->first()->sequence - $route->from_stops->first()->sequence) * 30;
+        });
+
+        $this->suggested_routes = $routes;
     }
 }

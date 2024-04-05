@@ -45,7 +45,7 @@
         </button>
         <button class="{{ request()->is('plan*') ? 'active' : ''}}" href="/plan" wire:navigate>
             <x-heroicon-o-flag class="h-5 w-5"/>
-            <span class="btm-nav-label">Plan</span>
+            <span class="btm-nav-label">規劃</span>
         </button>
         <button class="{{ request()->is('favorite-routes*') ? 'active' : ''}}" href="/favorite-routes" wire:navigate>
             <x-heroicon-o-heart class="h-5 w-5"/>
