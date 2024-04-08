@@ -87,6 +87,24 @@ class getRouteFareList extends Command
             'name_en' => 'MTR',
         ]);
 
+        Company::create([
+            'co' => 'sunferry',
+            'name_tc' => '新渡輪',
+            'name_en' => 'Sun Ferry',
+        ]);
+
+        Company::create([
+            'co' => 'hkkf',
+            'name_tc' => '港九小輪',
+            'name_en' => 'HKKF',
+        ]);
+
+        Company::create([
+            'co' => 'fortuneferry',
+            'name_tc' => '富裕小輪',
+            'name_en' => 'Fortune Ferry',
+        ]);
+
         foreach ($routes['stopList'] as $id => $stop)
         {
             Stop::create([
