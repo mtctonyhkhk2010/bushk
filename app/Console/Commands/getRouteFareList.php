@@ -183,6 +183,13 @@ class getRouteFareList extends Command
                 if (!isset($route['bound'][$co])) continue;
 
                 $company = $companies->firstWhere('co', $co);
+
+                if (!isset($company))
+                {
+                    echo 'Company not found: ' . $co;
+                    continue;
+                }
+
                 $new_route->companies()->attach($company->id, ['bound' => $route['bound'][$co]]);
 
                 $target_stops = Stop::whereIn('stop_code', $route['stops'][$co])->get();
