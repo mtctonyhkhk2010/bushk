@@ -10,7 +10,7 @@
                         <x-route-search-item :route="$route" :tab="$tab['name']"/>
                     @empty
                         <div class="h-28 w-full flex justify-center items-center">
-                            <button class="btn btn-neutral block" wire:click="clearSearch()">{{ $tab['label'] }}沒有路線"{{ $search }}", 按此重設</button>
+                            <button type="button" class="btn btn-neutral block" wire:click="clearSearch()">{{ $tab['label'] }}沒有路線"{{ $search }}", 按此重設</button>
                         </div>
                     @endforelse
                 </x-search-tab>
