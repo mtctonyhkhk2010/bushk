@@ -48,12 +48,12 @@ class Search extends Component
         $this->search .= $character;
     }
 
-    public function backspace()
+    public function backspace(): void
     {
         $this->search = substr($this->search, 0, -1);
     }
 
-    public function clearSearch()
+    public function clearSearch(): void
     {
         $this->search = '';
     }
