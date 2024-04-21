@@ -18,7 +18,7 @@ class SearchTab extends Tab
                         :class="{ 'tab-active': selected === '{{ $name }}' }"
                         data-name="{{ $name }}"
                         x-init="
-                                tabs.push({ name: '{{ $name }}', label: {{ json_encode($tabLabel()) }} });
+                                tabs.push({ name: '{{ $name }}', label: {{ json_encode($tabLabel($label)) }} });
                                 Livewire.hook('morph.removed', ({el}) => {
                                     if (el.getAttribute('data-name') == '{{ $name }}'){
                                         tabs = tabs.filter(i => i.name !== '{{ $name }}')

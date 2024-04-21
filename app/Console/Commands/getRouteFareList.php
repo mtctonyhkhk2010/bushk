@@ -9,6 +9,8 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
+use MatanYadaev\EloquentSpatial\Objects\Point;
 
 class getRouteFareList extends Command
 {
@@ -36,14 +38,14 @@ class getRouteFareList extends Command
             return Http::get('https://data.hkbus.app/routeFareList.json')->collect();
         });
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
         DB::table('route_stop')->truncate();
         DB::table('company_route')->truncate();
         DB::table('companies')->truncate();
         DB::table('routes')->truncate();
         DB::table('stops')->truncate();
         DB::table('service_times')->truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
         Company::create([
             'co' => 'kmb',
@@ -111,7 +113,7 @@ class getRouteFareList extends Command
                 'stop_code' => $id,
                 'name_tc' => $stop['name']['zh'],
                 'name_en' => $stop['name']['en'],
-                'position' => DB::raw('POINT(' . $stop['location']['lng'] . ', ' . $stop['location']['lat'] . ')'),
+                'position' => new Point($stop['location']['lat'], $stop['location']['lng']),
             ]);
         }
 
