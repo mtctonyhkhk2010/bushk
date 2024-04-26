@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use MatanYadaev\EloquentSpatial\Objects\Point;
 use function Laravel\Prompts\search;
 
 class Plan extends Component
@@ -111,21 +112,22 @@ class Plan extends Component
         $distance = 500;
 
         $routes = Route::whereHas('stops', function (Builder $query) use ($distance) {
-            $query->whereRaw('ST_Distance_Sphere(position,point(?, ?)) < '.$distance, [$this->from_location['longitude'], $this->from_location['latitude']]);
+            $query->whereDistanceSphere('position', new Point($this->from_location['latitude'], $this->from_location['longitude']), '<', $distance);
         })->whereHas('stops', function (Builder $query) use ($distance) {
-            $query->whereRaw('ST_Distance_Sphere(position,point(?, ?)) < '.$distance, [$this->to_location['longitude'], $this->to_location['latitude']]);
+            $query->whereDistanceSphere('position', new Point($this->to_location['latitude'], $this->to_location['longitude']), '<', $distance);
         })
         ->with(['from_stops' => function (\Illuminate\Contracts\Database\Eloquent\Builder $query) use ($distance) {
             $query->selectRaw('ST_Distance_Sphere(position,point(?, ?)) as from_distance', [$this->from_location['longitude'], $this->from_location['latitude']])
+                ->addSelect(['name_tc', 'name_en'])
                 ->having('from_distance', '<', $distance)
                 ->orderBy('from_distance');
         }, 'to_stops' => function (\Illuminate\Contracts\Database\Eloquent\Builder $query) use ($distance) {
             $query->selectRaw('ST_Distance_Sphere(position,point(?, ?)) as to_distance', [$this->to_location['longitude'], $this->to_location['latitude']])
+                ->addSelect(['name_tc', 'name_en'])
                 ->having('to_distance', '<', $distance)
                 ->orderBy('to_distance');
         }])
         ->get();
-
 
         foreach ($routes as $route)
         {
@@ -138,11 +140,13 @@ class Plan extends Component
             }
         }
 
-        $routes = $routes->filter(function ($route) use ($routes) {
-            return $route->from_stops->first()->sequence < $route->to_stops->first()->sequence;
-        })->sortBy(function ($route) {
+        $routes = $routes
+            ->filter(function ($route) use ($routes) {
+            return $route->from_stops->first()->pivot->sequence < $route->to_stops->first()->pivot->sequence;
+        })
+            ->sortBy(function ($route) {
             return $route->from_stops->first()->from_distance + $route->to_stops->first()->to_distance +
-                ($route->to_stops->first()->sequence - $route->from_stops->first()->sequence) * 30;
+                ($route->to_stops->first()->pivot->sequence - $route->from_stops->first()->pivot->sequence) * 30;
         });
 
         $this->suggested_routes = $routes;
