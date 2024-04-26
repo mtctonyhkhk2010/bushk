@@ -117,13 +117,13 @@ class Plan extends Component
             $query->whereDistanceSphere('position', new Point($this->to_location['latitude'], $this->to_location['longitude']), '<', $distance);
         })
         ->with(['from_stops' => function (\Illuminate\Contracts\Database\Eloquent\Builder $query) use ($distance) {
-            $query->selectRaw('ST_Distance_Sphere(position,point(?, ?)) as from_distance', [$this->from_location['longitude'], $this->from_location['latitude']])
-                ->addSelect(['name_tc', 'name_en'])
+            $query
+                ->withDistanceSphere('position', new Point($this->from_location['latitude'], $this->from_location['longitude']), 'from_distance')
                 ->having('from_distance', '<', $distance)
                 ->orderBy('from_distance');
         }, 'to_stops' => function (\Illuminate\Contracts\Database\Eloquent\Builder $query) use ($distance) {
-            $query->selectRaw('ST_Distance_Sphere(position,point(?, ?)) as to_distance', [$this->to_location['longitude'], $this->to_location['latitude']])
-                ->addSelect(['name_tc', 'name_en'])
+            $query
+                ->withDistanceSphere('position', new Point($this->to_location['latitude'], $this->to_location['longitude']), 'to_distance')
                 ->having('to_distance', '<', $distance)
                 ->orderBy('to_distance');
         }])
