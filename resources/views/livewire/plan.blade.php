@@ -38,33 +38,46 @@
 
         <div>
             <h5 class="mt-3">建議路線</h5>
-            @forelse($suggested_routes as $route)
-                <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
+            @forelse($suggested_routes as $key => $route)
+                <div wire:navigate href="/route/{{ $route['steps'][0]['system_route']->id }}/{{ $route['steps'][0]['system_route']->name }}"
                      class="flex items-center justify-start gap-4 p-3 cursor-pointer"
-                     x-data="plan(@js($route->from_stops->first()->stop_code), @js($route), @js($route->companies->keyBy('id')))"
-                     id="route_{{ $route->id }}"
+                     x-data="plan(@js($route['steps'][0]['system_from_stop']->stop_code), @js($route['steps'][0]['system_route']), @js($route['steps'][0]['system_route']->companies->keyBy('id')))"
+                     id="route_{{ $key }}_{{ $route['steps'][0]['system_route']->id }}"
                 >
                     <div>
-                        <h4 class="min-w-20 font-bold text-lg">
-                            {{ $route->name }}
-                            @if($route->service_type != 1)
-                                <span class="text-xs">特別班</span>
-                            @endif
-                        </h4>
-                        <div class="text-xs">
-                            {{ $route->companies->pluck('name_tc')->implode('+') }}
+                        <div class="min-w-20 font-bold text-lg flex">
+                            @foreach($route['steps'] as $step)
+                                <div class="badge badge-outline">{{ $step['name'] }}</div>
+                                @if(!$loop->last)
+                                    <x-heroicon-o-chevron-right class="h-5 w-5"></x-heroicon-o-chevron-right>
+                                @endif
+                            @endforeach
                         </div>
-                    </div>
-                    <div class="flex flex-col">
-                        <div>
-                            <span class="text-xs">往</span> <span class="text-lg">{{ $route->dest_tc }}</span>
+                        <div class="flex mt-1 items-center">
+                            <div class="badge badge-outline"><x-heroicon-o-clock class="h-5 w-5"></x-heroicon-o-clock>{{ $route['duration'] }}分鐘</div> |
+                            @foreach($route['steps'] as $step)
+                                @if($loop->iteration == 1)
+                                    <div class="badge badge-outline">{{ $step['from']['name'] }}</div>
+                                    <x-heroicon-o-chevron-right class="h-5 w-5"></x-heroicon-o-chevron-right>
+                                    <div class="badge badge-outline">{{ $step['to']['name'] }}</div>
+                                    @php
+                                        $last_stop = $step['to']['name']
+                                    @endphp
+                                @endif
+                                @if($loop->iteration > 1)
+                                    <x-heroicon-o-chevron-right class="h-5 w-5"></x-heroicon-o-chevron-right>
+                                    @if($last_stop != $step['from']['name'])
+                                        <div class="badge badge-outline">{{ $step['from']['name'] }}</div>
+                                        <x-heroicon-o-chevron-right class="h-5 w-5"></x-heroicon-o-chevron-right>
+                                    @endif
+                                    <div class="badge badge-outline">{{ $step['to']['name'] }}</div>
+                                @endif
+                            @endforeach
                         </div>
-                        <div class="text-xs">{{ $route->from_stops->first()->name_tc }} -> {{ $route->to_stops->first()->name_tc }}</div>
-
                     </div>
                     <div class="flex flex-col ml-auto">
                         <template x-if="loading">
-                            <span>loading</span>
+                            <span>loading..</span>
                         </template>
                         <template x-if="!loading">
                             <div>
