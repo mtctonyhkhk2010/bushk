@@ -41,6 +41,7 @@
             @forelse($suggested_routes as $route)
                 <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
                      class="flex items-center justify-start gap-4 p-3 cursor-pointer"
+                     x-data="plan(@js($route->from_stops->first()->stop_code), @js($route), @js($route->companies->keyBy('id')))"
                 >
                     <div>
                         <h4 class="min-w-20 font-bold text-lg">
@@ -84,11 +85,66 @@
 
 @script
 <script>
-    document.addEventListener('position-updated', (e) => {
+    navigator.geolocation.getCurrentPosition((position) => {
+        $wire.set('current_location', {
+            'latitude': position.coords.latitude,
+            'longitude': position.coords.longitude,
+        });
+    });
+    document.addEventListener('position-updated', () => {
         $wire.set('current_location', {
             'latitude': window.coords.latitude,
             'longitude': window.coords.longitude,
         });
     }, { once: true });
+
+    Alpine.data('plan', (start_stop_code, route, companies) => ({
+        start_stop_code: start_stop_code,
+        last_update: null,
+        etas: [],
+        companies: companies,
+        route: route,
+        init() {
+            this.$watch('etas', () => {
+                this.etas = this.etas.sort((a, b) => {
+                    return a.timestamp - b.timestamp;
+                })
+            });
+            this.getETA();
+        },
+
+        getETA() {
+            this.etas = [];
+            for (let key in this.companies) {
+                if (!this.companies.hasOwnProperty(key)) continue;
+
+                const company = this.companies[key];
+
+                const fetchEta = window.fetchEta(company.co, this.start_stop_code, this.route.name, this.route.service_type, this.route.gtfs_id, company.pivot.bound, this.route.nlb_id);
+
+                fetchEta.then((temp_etas) => {
+                    temp_etas.forEach((eta) => {
+                        this.etas.push(eta);
+                    });
+                });
+            }
+            this.last_update = Date.now();
+        },
+        formatTime(time) {
+            const date = new Date(time);
+            return this.padTo2Digits(date.getHours()) + ':' + this.padTo2Digits(date.getMinutes());
+        },
+        padTo2Digits(num) {
+            return String(num).padStart(2, '0');
+        },
+        remainingTimeInMinutes(time) {
+            const date = new Date(time);
+            const now = new Date();
+            const diffMs = (date - now); // milliseconds between now & Christmas
+            const diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
+            if (diffMins <= 0) return 0;
+            return diffMins;
+        }
+    }));
 </script>
 @endscript
