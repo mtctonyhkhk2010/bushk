@@ -40,7 +40,7 @@
             <h5 class="mt-3">建議路線</h5>
             @forelse($suggested_routes as $key => $route)
                 <div wire:navigate href="/route/{{ $route['steps'][0]['system_route']->id }}/{{ $route['steps'][0]['system_route']->name }}"
-                     class="flex items-center justify-start gap-4 p-3 cursor-pointer"
+                     class="flex items-center justify-start gap-4 py-3 cursor-pointer"
                      x-data="plan(@js($route['steps'][0]['system_from_stop']->stop_code), @js($route['steps'][0]['system_route']), @js($route['steps'][0]['system_route']->companies->keyBy('id')))"
                      id="route_{{ $key }}_{{ $route['steps'][0]['system_route']->id }}"
                 >

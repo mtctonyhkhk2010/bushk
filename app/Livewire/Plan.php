@@ -158,7 +158,7 @@ class Plan extends Component
         {
             foreach ($route['steps'] as &$step)
             {
-                $system_route = Route::where('name', $step['name'])->where('desc_tc', 'like', '%'.mb_substr($step['headsign'], 0, 2).'%')->first();
+                $system_route = Route::where('name', $step['name'])->where('dest_tc', 'like', '%'.mb_substr($step['headsign'], 0, 2).'%')->first();
                 if ($step['type'] == 'SUBWAY')
                 {
                     $mtr = MtrInfo::where('line_name_tc', $step['name'])->first();
