@@ -42,6 +42,7 @@
                 <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
                      class="flex items-center justify-start gap-4 p-3 cursor-pointer"
                      x-data="plan(@js($route->from_stops->first()->stop_code), @js($route), @js($route->companies->keyBy('id')))"
+                     id="route_{{ $route->id }}"
                 >
                     <div>
                         <h4 class="min-w-20 font-bold text-lg">
@@ -62,15 +63,23 @@
 
                     </div>
                     <div class="flex flex-col ml-auto">
-                        <template x-for="eta in etas">
-                            <div class="text-xs">
-                                <span x-text="formatTime(eta.eta)"></span>
-                                <span x-show="remainingTimeInMinutes(eta.eta) > 0">
-                                <span x-text="remainingTimeInMinutes(eta.eta)"></span>分鐘
-                            </span>
-                                <span x-show="remainingTimeInMinutes(eta.eta) == 0">
-                                即將到達
-                            </span>
+                        <template x-if="loading">
+                            <span>loading</span>
+                        </template>
+                        <template x-if="!loading">
+                            <div>
+                                <span x-show="etas.length === 0">未有班次</span>
+                                <template x-for="eta in etas">
+                                    <div class="text-xs">
+                                        <span x-text="formatTime(eta.eta)"></span>
+                                        <span x-show="remainingTimeInMinutes(eta.eta) > 0">
+                                    <span x-text="remainingTimeInMinutes(eta.eta)"></span>分鐘
+                                </span>
+                                        <span x-show="remainingTimeInMinutes(eta.eta) == 0">
+                                    即將到達
+                                </span>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>
@@ -104,7 +113,9 @@
         etas: [],
         companies: companies,
         route: route,
+        loading: true,
         init() {
+            this.etas = [];
             this.$watch('etas', () => {
                 this.etas = this.etas.sort((a, b) => {
                     return a.timestamp - b.timestamp;
@@ -126,6 +137,7 @@
                     temp_etas.forEach((eta) => {
                         this.etas.push(eta);
                     });
+                    this.loading = false;
                 });
             }
             this.last_update = Date.now();
