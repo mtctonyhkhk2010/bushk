@@ -38,38 +38,61 @@
 
         <div>
             <h5 class="mt-3">建議路線</h5>
-            @forelse($suggested_routes as $route)
-                <div wire:navigate href="/route/{{ $route->id }}/{{ $route->name }}"
-                     class="flex items-center justify-start gap-4 p-3 cursor-pointer"
+            @forelse($suggested_routes as $key => $route)
+                <div wire:navigate href="/route/{{ $route['steps'][0]['system_route']->id }}/{{ $route['steps'][0]['system_route']->name }}"
+                     class="flex items-center justify-start gap-4 py-3 cursor-pointer"
+                     x-data="plan(@js($route['steps'][0]['system_from_stop']->stop_code), @js($route['steps'][0]['system_route']), @js($route['steps'][0]['system_route']->companies->keyBy('id')))"
+                     id="route_{{ $key }}_{{ $route['steps'][0]['system_route']->id }}"
                 >
                     <div>
-                        <h4 class="min-w-20 font-bold text-lg">
-                            {{ $route->name }}
-                            @if($route->service_type != 1)
-                                <span class="text-xs">特別班</span>
-                            @endif
-                        </h4>
-                        <div class="text-xs">
-                            {{ $route->companies->pluck('name_tc')->implode('+') }}
+                        <div class="min-w-20 font-bold text-lg flex">
+                            @foreach($route['steps'] as $step)
+                                <div class="badge badge-outline">{{ $step['name'] }}</div>
+                                @if(!$loop->last)
+                                    <x-heroicon-o-chevron-right class="h-5 w-5"></x-heroicon-o-chevron-right>
+                                @endif
+                            @endforeach
                         </div>
-                    </div>
-                    <div class="flex flex-col">
-                        <div>
-                            <span class="text-xs">往</span> <span class="text-lg">{{ $route->dest_tc }}</span>
+                        <div class="flex mt-1 items-center">
+                            <div class="badge badge-outline"><x-heroicon-o-clock class="h-5 w-5"></x-heroicon-o-clock>{{ $route['duration'] }}分鐘</div> |
+                            @foreach($route['steps'] as $step)
+                                @if($loop->iteration == 1)
+                                    <div class="badge badge-outline">{{ $step['from']['name'] }}</div>
+                                    <x-heroicon-o-chevron-right class="h-5 w-5"></x-heroicon-o-chevron-right>
+                                    <div class="badge badge-outline">{{ $step['to']['name'] }}</div>
+                                    @php
+                                        $last_stop = $step['to']['name']
+                                    @endphp
+                                @endif
+                                @if($loop->iteration > 1)
+                                    <x-heroicon-o-chevron-right class="h-5 w-5"></x-heroicon-o-chevron-right>
+                                    @if($last_stop != $step['from']['name'])
+                                        <div class="badge badge-outline">{{ $step['from']['name'] }}</div>
+                                        <x-heroicon-o-chevron-right class="h-5 w-5"></x-heroicon-o-chevron-right>
+                                    @endif
+                                    <div class="badge badge-outline">{{ $step['to']['name'] }}</div>
+                                @endif
+                            @endforeach
                         </div>
-                        <div class="text-xs">{{ $route->from_stops->first()->name_tc }} -> {{ $route->to_stops->first()->name_tc }}</div>
-
                     </div>
                     <div class="flex flex-col ml-auto">
-                        <template x-for="eta in etas">
-                            <div class="text-xs">
-                                <span x-text="formatTime(eta.eta)"></span>
-                                <span x-show="remainingTimeInMinutes(eta.eta) > 0">
-                                <span x-text="remainingTimeInMinutes(eta.eta)"></span>分鐘
-                            </span>
-                                <span x-show="remainingTimeInMinutes(eta.eta) == 0">
-                                即將到達
-                            </span>
+                        <template x-if="loading">
+                            <span>loading..</span>
+                        </template>
+                        <template x-if="!loading">
+                            <div>
+                                <span x-show="etas.length === 0">未有班次</span>
+                                <template x-for="eta in etas">
+                                    <div class="text-xs">
+                                        <span x-text="formatTime(eta.eta)"></span>
+                                        <span x-show="remainingTimeInMinutes(eta.eta) > 0">
+                                    <span x-text="remainingTimeInMinutes(eta.eta)"></span>分鐘
+                                </span>
+                                        <span x-show="remainingTimeInMinutes(eta.eta) == 0">
+                                    即將到達
+                                </span>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>
@@ -84,11 +107,69 @@
 
 @script
 <script>
-    document.addEventListener('position-updated', (e) => {
+    navigator.geolocation.getCurrentPosition((position) => {
+        $wire.set('current_location', {
+            'latitude': position.coords.latitude,
+            'longitude': position.coords.longitude,
+        });
+    });
+    document.addEventListener('position-updated', () => {
         $wire.set('current_location', {
             'latitude': window.coords.latitude,
             'longitude': window.coords.longitude,
         });
     }, { once: true });
+
+    Alpine.data('plan', (start_stop_code, route, companies) => ({
+        start_stop_code: start_stop_code,
+        last_update: null,
+        etas: [],
+        companies: companies,
+        route: route,
+        loading: true,
+        init() {
+            this.etas = [];
+            this.$watch('etas', () => {
+                this.etas = this.etas.sort((a, b) => {
+                    return a.timestamp - b.timestamp;
+                })
+            });
+            this.getETA();
+        },
+
+        getETA() {
+            this.etas = [];
+            for (let key in this.companies) {
+                if (!this.companies.hasOwnProperty(key)) continue;
+
+                const company = this.companies[key];
+
+                const fetchEta = window.fetchEta(company.co, this.start_stop_code, this.route.name, this.route.service_type, this.route.gtfs_id, company.pivot.bound, this.route.nlb_id);
+
+                fetchEta.then((temp_etas) => {
+                    temp_etas.forEach((eta) => {
+                        this.etas.push(eta);
+                    });
+                    this.loading = false;
+                });
+            }
+            this.last_update = Date.now();
+        },
+        formatTime(time) {
+            const date = new Date(time);
+            return this.padTo2Digits(date.getHours()) + ':' + this.padTo2Digits(date.getMinutes());
+        },
+        padTo2Digits(num) {
+            return String(num).padStart(2, '0');
+        },
+        remainingTimeInMinutes(time) {
+            const date = new Date(time);
+            const now = new Date();
+            const diffMs = (date - now); // milliseconds between now & Christmas
+            const diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
+            if (diffMins <= 0) return 0;
+            return diffMins;
+        }
+    }));
 </script>
 @endscript

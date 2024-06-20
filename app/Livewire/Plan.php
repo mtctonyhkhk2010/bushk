@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Models\MtrInfo;
 use App\Models\Route;
+use App\Models\Stop;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -109,46 +111,68 @@ class Plan extends Component
             $this->from_location = $this->current_location;
         }
 
-        $distance = 500;
+        $results = Http::withHeaders([
+            'X-Goog-Api-Key' => config('google.API_KEY'),
+            'X-Goog-FieldMask' => 'routes.legs.steps.transitDetails,routes.duration.*'
+        ])->post('https://routes.googleapis.com/directions/v2:computeRoutes', [
+            'origin' => [
+                'location' => [
+                    'latLng' => $this->from_location
+                ],
+            ],
+            'destination' => [
+                'location' => [
+                    'latLng' => $this->to_location
+                ],
+            ],
+            'languageCode'        => 'zh-HK',
+            'travelMode' => 'TRANSIT',
+            'computeAlternativeRoutes' => true,
+        ])->json();
 
-        $routes = Route::whereHas('stops', function (Builder $query) use ($distance) {
-            $query->whereDistanceSphere('position', new Point($this->from_location['latitude'], $this->from_location['longitude']), '<', $distance);
-        })->whereHas('stops', function (Builder $query) use ($distance) {
-            $query->whereDistanceSphere('position', new Point($this->to_location['latitude'], $this->to_location['longitude']), '<', $distance);
-        })
-        ->with(['from_stops' => function (\Illuminate\Contracts\Database\Eloquent\Builder $query) use ($distance) {
-            $query
-                ->withDistanceSphere('position', new Point($this->from_location['latitude'], $this->from_location['longitude']), 'from_distance')
-                ->having('from_distance', '<', $distance)
-                ->orderBy('from_distance');
-        }, 'to_stops' => function (\Illuminate\Contracts\Database\Eloquent\Builder $query) use ($distance) {
-            $query
-                ->withDistanceSphere('position', new Point($this->to_location['latitude'], $this->to_location['longitude']), 'to_distance')
-                ->having('to_distance', '<', $distance)
-                ->orderBy('to_distance');
-        }])
-        ->get();
+        $this->suggested_routes = [];
 
-        foreach ($routes as $route)
+        foreach ($results['routes'] as $key => $route)
         {
-            if (str_contains($route->dest_tc, '循環線'))
+            foreach ($route['legs'] as $leg)
             {
-                foreach ($route->to_stops as $key => $to_stop)
+                foreach ($leg['steps'] as $step)
                 {
-                    if ($route->from_stops->first()->sequence > $to_stop->sequence) $route->to_stops->forget($key);
+                    if (!empty($step))
+                    {
+                        $this->suggested_routes[$key]['duration'] = round((int) filter_var($route['duration'], FILTER_SANITIZE_NUMBER_INT) / 60);
+
+                        $this->suggested_routes[$key]['steps'][] = [
+                            'name' => $step['transitDetails']['transitLine']['nameShort'] ?? $step['transitDetails']['transitLine']['name'],
+                            'from' => $step['transitDetails']['stopDetails']['departureStop'],
+                            'to' => $step['transitDetails']['stopDetails']['arrivalStop'],
+                            'headsign' => $step['transitDetails']['headsign'],
+                            'type' => $step['transitDetails']['transitLine']['vehicle']['type'],
+                        ];
+                    }
                 }
             }
         }
 
-        $routes = $routes
-            ->filter(function ($route) use ($routes) {
-            return $route->from_stops->first()->pivot->sequence < $route->to_stops->first()->pivot->sequence;
-        })
-            ->sortBy(function ($route) {
-            return $route->from_stops->first()->from_distance + $route->to_stops->first()->to_distance +
-                ($route->to_stops->first()->pivot->sequence - $route->from_stops->first()->pivot->sequence) * 30;
-        });
+        foreach ($this->suggested_routes as $key => &$route)
+        {
+            foreach ($route['steps'] as &$step)
+            {
+                $system_route = Route::where('name', $step['name'])->where('dest_tc', 'like', '%'.mb_substr($step['headsign'], 0, 2).'%')->first();
+                if ($step['type'] == 'SUBWAY')
+                {
+                    $mtr = MtrInfo::where('line_name_tc', $step['name'])->first();
+                    $system_route = Route::where('name', $mtr['line_id'])->first();
+                }
 
-        $this->suggested_routes = $routes;
+                $system_from_stop = Stop::orderByDistance('position', new Point($step['from']['location']['latLng']['latitude'], $step['from']['location']['latLng']['longitude']))
+                    ->whereHas('routes', function ($query) use ($system_route) {
+                        $query->where('id', $system_route->id);
+                    })->first();
+                $step['system_route'] = $system_route;
+                $step['system_from_stop'] = $system_from_stop;
+            }
+
+        }
     }
 }
